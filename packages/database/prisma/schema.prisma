@@ -1,8 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,4 +5,1481 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum Role {
+  ADMIN
+  SALES_REP
+  SALES_MANAGER
+  FINANCE
+  OPERATIONS
+  CUSTOMER
+}
+
+enum ProductType {
+  HARDWARE
+  SERVICE
+  SUBSCRIPTION
+}
+
+enum BillingType {
+  ONE_TIME
+  RECURRING
+}
+
+enum TaxBehavior {
+  INCLUSIVE
+  EXCLUSIVE
+}
+
+enum QuoteStage {
+  DRAFT
+  PENDING_APPROVAL
+  READY_TO_SEND
+  SENT
+  UNDER_NEGOTIATION
+  CUSTOMER_ACCEPTED
+  CONFIRMED
+  REVISION_REQUIRED
+  EXPIRED
+  CANCELLED
+}
+
+enum QuoteVersionStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  SUPERSEDED
+  REJECTED
+}
+
+enum ApprovalRequestStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+  SUPERSEDED
+}
+
+enum ApprovalStepStatus {
+  PENDING
+  ACTIVE
+  APPROVED
+  REJECTED
+  REVISION_REQUESTED
+  SKIPPED
+}
+
+enum ApprovalDecisionAction {
+  APPROVE
+  REJECT
+  REQUEST_REVISION
+}
+
+enum NegotiationThreadStatus {
+  OPEN
+  CLOSED
+}
+
+enum ChangeRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ChangeRequestType {
+  PRICE
+  DISCOUNT
+  QUANTITY
+  TERMS
+  COMMENT
+}
+
+enum RecommendationInteractionType {
+  IMPRESSION
+  DISMISS
+  ACCEPT
+}
+
+enum StockMovementType {
+  RECEIPT
+  RESERVATION
+  RELEASE
+  SHIPMENT
+  ADJUSTMENT
+}
+
+enum StockReservationStatus {
+  PENDING
+  CONFIRMED
+  RELEASED
+  FULFILLED
+}
+
+enum FulfillmentPlanStatus {
+  PREVIEW
+  ACCEPTED
+  OVERRIDDEN
+}
+
+enum ShipmentStatus {
+  PENDING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum BackorderStatus {
+  OPEN
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELLED
+}
+
+enum OrderStatus {
+  CONFIRMED
+  ALLOCATING
+  FULFILLING
+  FULFILLED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  PAUSED
+}
+
+enum BillingScheduleStatus {
+  PENDING
+  GENERATED
+  SKIPPED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  ISSUED
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  VOID
+}
+
+enum InvoiceType {
+  ONE_TIME
+  RECURRING
+}
+
+enum CreditNoteStatus {
+  DRAFT
+  ISSUED
+  APPLIED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  CREDIT_CARD
+  CHECK
+  OTHER
+}
+
+enum ProrationConvention {
+  CALENDAR_DAYS
+  THIRTY_DAY_MONTH
+}
+
+enum SubscriptionInterval {
+  DAY
+  WEEK
+  MONTH
+  YEAR
+}
+
+enum OutboxEventStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ExportJobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum ExportFormat {
+  PDF
+  XLS
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum DealEventVisibility {
+  INTERNAL
+  CUSTOMER
+  BOTH
+}
+
+enum PolicyStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum MagicLinkScope {
+  QUOTE
+  CUSTOMER
+}
+
+// ─── Organization & Access ───────────────────────────────────────────────────
+
+model Organization {
+  id           String   @id @default(cuid())
+  name         String
+  baseCurrency String   @default("USD") @map("base_currency")
+  timezone     String   @default("UTC")
+  settings     Json     @default("{}")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  users              User[]
+  roleAssignments    RoleAssignment[]
+  salesTeams         SalesTeam[]
+  sessions           Session[]
+  refreshTokens      RefreshToken[]
+  portalIdentities   PortalIdentity[]
+  magicLinkTokens    MagicLinkToken[]
+  customerAccounts   CustomerAccount[]
+  customerTiers      CustomerTier[]
+  productCategories  ProductCategory[]
+  products           Product[]
+  taxes              Tax[]
+  priceLists         PriceList[]
+  promotions         Promotion[]
+  subscriptionPlans  SubscriptionPlan[]
+  discountLimits     DiscountLimit[]
+  approvalPolicies   ApprovalPolicy[]
+  quotes             Quote[]
+  warehouses         Warehouse[]
+  orders             Order[]
+  subscriptions      Subscription[]
+  invoices           Invoice[]
+  payments           Payment[]
+  productAffinities  ProductAffinity[]
+  recommendationRules RecommendationRule[]
+  dealHealthSnapshots DealHealthSnapshot[]
+  alerts             Alert[]
+  auditEvents        AuditEvent[]
+  dealEvents         DealEvent[]
+  outboxEvents       OutboxEvent[]
+  idempotencyRecords IdempotencyRecord[]
+  exportJobs         ExportJob[]
+
+  @@map("organizations")
+}
+
+model User {
+  id             String     @id @default(cuid())
+  organizationId String     @map("organization_id")
+  email          String
+  passwordHash   String?    @map("password_hash")
+  firstName      String     @map("first_name")
+  lastName       String     @map("last_name")
+  status         UserStatus @default(ACTIVE)
+  revision       Int        @default(0)
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+
+  organization     Organization     @relation(fields: [organizationId], references: [id])
+  roleAssignments  RoleAssignment[]
+  sessions         Session[]
+  refreshTokens    RefreshToken[]
+  managedTeams     SalesTeam[]      @relation("TeamManager")
+  ownedQuotes      Quote[]          @relation("QuoteOwner")
+  approvalSteps    ApprovalStep[]   @relation("StepAssignee")
+  approvalDecisions ApprovalDecision[]
+  auditEvents      AuditEvent[]
+  exportJobs       ExportJob[]
+
+  @@unique([organizationId, email])
+  @@index([organizationId, status])
+  @@map("users")
+}
+
+model RoleAssignment {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  role           Role
+  salesTeamId    String?  @map("sales_team_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+  salesTeam    SalesTeam?   @relation(fields: [salesTeamId], references: [id])
+
+  @@unique([organizationId, userId, role, salesTeamId])
+  @@index([organizationId, role])
+  @@map("role_assignments")
+}
+
+model SalesTeam {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  managerId      String?  @map("manager_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  manager         User?            @relation("TeamManager", fields: [managerId], references: [id])
+  roleAssignments RoleAssignment[]
+  customerAccounts CustomerAccount[]
+
+  @@unique([organizationId, name])
+  @@map("sales_teams")
+}
+
+model Session {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  tokenHash      String   @unique @map("token_hash")
+  expiresAt      DateTime @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model RefreshToken {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  userId         String   @map("user_id")
+  tokenHash      String   @unique @map("token_hash")
+  expiresAt      DateTime @map("expires_at")
+  revokedAt      DateTime? @map("revoked_at")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@index([organizationId, userId])
+  @@map("refresh_tokens")
+}
+
+model PortalIdentity {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  customerContactId String @unique @map("customer_contact_id")
+  email          String
+  passwordHash   String?  @map("password_hash")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization    Organization    @relation(fields: [organizationId], references: [id])
+  customerContact CustomerContact @relation(fields: [customerContactId], references: [id])
+  magicLinkTokens MagicLinkToken[]
+
+  @@unique([organizationId, email])
+  @@map("portal_identities")
+}
+
+model MagicLinkToken {
+  id               String         @id @default(cuid())
+  organizationId   String         @map("organization_id")
+  portalIdentityId String?        @map("portal_identity_id")
+  tokenHash        String         @unique @map("token_hash")
+  scope            MagicLinkScope
+  quoteId          String?        @map("quote_id")
+  customerAccountId String?       @map("customer_account_id")
+  maxUses          Int            @default(1) @map("max_uses")
+  useCount         Int            @default(0) @map("use_count")
+  expiresAt        DateTime       @map("expires_at")
+  revokedAt        DateTime?      @map("revoked_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  portalIdentity PortalIdentity? @relation(fields: [portalIdentityId], references: [id])
+  quote          Quote?          @relation(fields: [quoteId], references: [id])
+
+  @@index([organizationId, expiresAt])
+  @@map("magic_link_tokens")
+}
+
+// ─── Customer & Catalog ──────────────────────────────────────────────────────
+
+model CustomerTier {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  code           String
+  priority       Int      @default(0)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  customerAccounts CustomerAccount[]
+  priceRules       PriceRule[]
+  discountLimits   DiscountLimit[]
+
+  @@unique([organizationId, code])
+  @@map("customer_tiers")
+}
+
+model CustomerAccount {
+  id               String   @id @default(cuid())
+  organizationId   String   @map("organization_id")
+  name             String
+  tierId           String   @map("tier_id")
+  salesTeamId      String?  @map("sales_team_id")
+  assignedRepId    String?  @map("assigned_rep_id")
+  preferredCurrency String  @default("USD") @map("preferred_currency")
+  paymentTermsDays Int      @default(30) @map("payment_terms_days")
+  creditLimit      Decimal  @default(0) @map("credit_limit") @db.Decimal(19, 4)
+  currentExposure  Decimal  @default(0) @map("current_exposure") @db.Decimal(19, 4)
+  overdueBalance   Decimal  @default(0) @map("overdue_balance") @db.Decimal(19, 4)
+  active           Boolean  @default(true)
+  revision         Int      @default(0)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  organization Organization    @relation(fields: [organizationId], references: [id])
+  tier         CustomerTier    @relation(fields: [tierId], references: [id])
+  salesTeam    SalesTeam?      @relation(fields: [salesTeamId], references: [id])
+  contacts     CustomerContact[]
+  quotes       Quote[]
+  orders       Order[]
+
+  @@index([organizationId, tierId])
+  @@map("customer_accounts")
+}
+
+model CustomerContact {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  customerAccountId String   @map("customer_account_id")
+  email             String
+  firstName         String   @map("first_name")
+  lastName          String   @map("last_name")
+  isPrimary         Boolean  @default(false) @map("is_primary")
+  portalEnabled     Boolean  @default(false) @map("portal_enabled")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  customerAccount CustomerAccount @relation(fields: [customerAccountId], references: [id])
+  portalIdentity  PortalIdentity?
+
+  @@unique([organizationId, customerAccountId, email])
+  @@map("customer_contacts")
+}
+
+model ProductCategory {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  code           String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization   Organization    @relation(fields: [organizationId], references: [id])
+  products       Product[]
+  priceRules     PriceRule[]
+  discountLimits DiscountLimit[]
+
+  @@unique([organizationId, code])
+  @@map("product_categories")
+}
+
+model Product {
+  id             String      @id @default(cuid())
+  organizationId String      @map("organization_id")
+  categoryId     String      @map("category_id")
+  name           String
+  code           String
+  type           ProductType
+  description    String?
+  unit           String      @default("each")
+  standardCost   Decimal     @map("standard_cost") @db.Decimal(19, 4)
+  taxId          String?     @map("tax_id")
+  active         Boolean     @default(true)
+  revision       Int         @default(0)
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  organization        Organization         @relation(fields: [organizationId], references: [id])
+  category            ProductCategory      @relation(fields: [categoryId], references: [id])
+  tax                 Tax?                 @relation(fields: [taxId], references: [id])
+  variants            ProductVariant[]
+  priceRules          PriceRule[]
+  discountLimits      DiscountLimit[]
+  quoteLines          QuoteLine[]
+  orderLines          OrderLine[]
+  inventoryBalances   InventoryBalance[]
+  productAffinitiesFrom ProductAffinity[]  @relation("AffinitySource")
+  productAffinitiesTo   ProductAffinity[]  @relation("AffinityTarget")
+  recommendationRules RecommendationRule[]
+
+  @@unique([organizationId, code])
+  @@index([organizationId, type, active])
+  @@map("products")
+}
+
+model ProductVariant {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  productId      String   @map("product_id")
+  sku            String
+  name           String?
+  attributes     Json     @default("{}")
+  priceSurcharge Decimal  @default(0) @map("price_surcharge") @db.Decimal(19, 4)
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  product           Product           @relation(fields: [productId], references: [id])
+  quoteLines        QuoteLine[]
+  orderLines        OrderLine[]
+  inventoryBalances InventoryBalance[]
+
+  @@unique([organizationId, sku])
+  @@map("product_variants")
+}
+
+model Tax {
+  id             String      @id @default(cuid())
+  organizationId String      @map("organization_id")
+  name           String
+  rate           Decimal     @db.Decimal(19, 4)
+  behavior       TaxBehavior @default(EXCLUSIVE)
+  effectiveFrom  DateTime    @map("effective_from")
+  effectiveTo    DateTime?   @map("effective_to")
+  active         Boolean     @default(true)
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  products     Product[]
+
+  @@index([organizationId, effectiveFrom, effectiveTo])
+  @@map("taxes")
+}
+
+model PriceList {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  currency       String   @default("USD")
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime? @map("effective_to")
+  active         Boolean  @default(true)
+  priority       Int      @default(0)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  priceRules   PriceRule[]
+
+  @@index([organizationId, active, effectiveFrom])
+  @@map("price_lists")
+}
+
+model PriceRule {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  priceListId    String   @map("price_list_id")
+  productId      String?  @map("product_id")
+  categoryId     String?  @map("category_id")
+  tierId         String?  @map("tier_id")
+  minQuantity    Decimal  @default(1) @map("min_quantity") @db.Decimal(19, 4)
+  unitPrice      Decimal  @map("unit_price") @db.Decimal(19, 4)
+  priority       Int      @default(0)
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime? @map("effective_to")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  priceList PriceList       @relation(fields: [priceListId], references: [id])
+  product   Product?        @relation(fields: [productId], references: [id])
+  category  ProductCategory? @relation(fields: [categoryId], references: [id])
+  tier      CustomerTier?   @relation(fields: [tierId], references: [id])
+
+  @@index([priceListId, productId, categoryId, tierId])
+  @@map("price_rules")
+}
+
+model Promotion {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  code           String
+  boostScore     Decimal  @default(0) @map("boost_score") @db.Decimal(19, 4)
+  priority       Int      @default(0)
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime? @map("effective_to")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, code])
+  @@map("promotions")
+}
+
+model SubscriptionPlan {
+  id                  String              @id @default(cuid())
+  organizationId      String              @map("organization_id")
+  name                String
+  code                String
+  interval            SubscriptionInterval
+  intervalCount       Int                 @default(1) @map("interval_count")
+  prorationConvention ProrationConvention @default(CALENDAR_DAYS) @map("proration_convention")
+  cancellationRules   Json                @default("{}") @map("cancellation_rules")
+  active              Boolean             @default(true)
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+
+  organization     Organization      @relation(fields: [organizationId], references: [id])
+  quoteLines       QuoteLine[]
+  subscriptionItems SubscriptionItem[]
+
+  @@unique([organizationId, code])
+  @@map("subscription_plans")
+}
+
+// ─── Quotation & Governance ──────────────────────────────────────────────────
+
+model DiscountLimit {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  tierId         String?  @map("tier_id")
+  categoryId     String?  @map("category_id")
+  productId      String?  @map("product_id")
+  maxDiscountPct Decimal  @map("max_discount_pct") @db.Decimal(19, 4)
+  priority       Int      @default(0)
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime? @map("effective_to")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization     @relation(fields: [organizationId], references: [id])
+  tier         CustomerTier?    @relation(fields: [tierId], references: [id])
+  category     ProductCategory? @relation(fields: [categoryId], references: [id])
+  product      Product?         @relation(fields: [productId], references: [id])
+
+  @@index([organizationId, tierId, categoryId, productId])
+  @@map("discount_limits")
+}
+
+model Quote {
+  id               String     @id @default(cuid())
+  organizationId   String     @map("organization_id")
+  customerAccountId String    @map("customer_account_id")
+  ownerId          String     @map("owner_id")
+  quoteNumber      String     @map("quote_number")
+  stage            QuoteStage @default(DRAFT)
+  currentVersionId String?    @unique @map("current_version_id")
+  expiresAt        DateTime?  @map("expires_at")
+  revision         Int        @default(0)
+  createdAt        DateTime   @default(now()) @map("created_at")
+  updatedAt        DateTime   @updatedAt @map("updated_at")
+
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  customerAccount CustomerAccount    @relation(fields: [customerAccountId], references: [id])
+  owner           User               @relation("QuoteOwner", fields: [ownerId], references: [id])
+  currentVersion  QuoteVersion?      @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  versions        QuoteVersion[]     @relation("QuoteVersions")
+  negotiationThreads NegotiationThread[]
+  magicLinkTokens MagicLinkToken[]
+  recommendationInteractions RecommendationInteraction[]
+  orders          Order[]
+  dealEvents      DealEvent[]
+
+  @@unique([organizationId, quoteNumber])
+  @@index([organizationId, stage, ownerId])
+  @@index([organizationId, updatedAt])
+  @@map("quotes")
+}
+
+model QuoteVersion {
+  id               String             @id @default(cuid())
+  organizationId   String             @map("organization_id")
+  quoteId          String             @map("quote_id")
+  revisionNumber   Int                @map("revision_number")
+  status           QuoteVersionStatus @default(DRAFT)
+  currency         String             @default("USD")
+  subtotal         Decimal            @default(0) @db.Decimal(19, 4)
+  taxTotal         Decimal            @default(0) @map("tax_total") @db.Decimal(19, 4)
+  discountTotal    Decimal            @default(0) @map("discount_total") @db.Decimal(19, 4)
+  total            Decimal            @default(0) @db.Decimal(19, 4)
+  costTotal        Decimal            @default(0) @map("cost_total") @db.Decimal(19, 4)
+  grossMargin      Decimal            @default(0) @map("gross_margin") @db.Decimal(19, 4)
+  marginPercent    Decimal            @default(0) @map("margin_percent") @db.Decimal(19, 4)
+  riskFacts        Json               @default("{}") @map("risk_facts")
+  policyVersion    String?            @map("policy_version")
+  termsFingerprint String             @map("terms_fingerprint")
+  paymentTermsDays Int                @default(30) @map("payment_terms_days")
+  notes            String?
+  createdAt        DateTime           @default(now()) @map("created_at")
+
+  quote            Quote              @relation("QuoteVersions", fields: [quoteId], references: [id])
+  currentForQuote  Quote?             @relation("CurrentVersion")
+  lines            QuoteLine[]
+  approvalRequests ApprovalRequest[]
+  changeRequests   ChangeRequest[]
+
+  @@unique([quoteId, revisionNumber])
+  @@index([organizationId, status])
+  @@map("quote_versions")
+}
+
+model QuoteLine {
+  id                 String      @id @default(cuid())
+  organizationId     String      @map("organization_id")
+  quoteVersionId     String      @map("quote_version_id")
+  productId          String      @map("product_id")
+  variantId          String?     @map("variant_id")
+  lineNumber         Int         @map("line_number")
+  productName        String      @map("product_name")
+  productType        ProductType @map("product_type")
+  sku                String?
+  quantity           Decimal     @db.Decimal(19, 4)
+  unitPrice          Decimal     @map("unit_price") @db.Decimal(19, 4)
+  unitCost           Decimal     @map("unit_cost") @db.Decimal(19, 4)
+  discountPercent    Decimal     @default(0) @map("discount_percent") @db.Decimal(19, 4)
+  discountAmount     Decimal     @default(0) @map("discount_amount") @db.Decimal(19, 4)
+  taxRate            Decimal     @default(0) @map("tax_rate") @db.Decimal(19, 4)
+  taxAmount          Decimal     @default(0) @map("tax_amount") @db.Decimal(19, 4)
+  lineTotal          Decimal     @default(0) @map("line_total") @db.Decimal(19, 4)
+  billingType        BillingType @default(ONE_TIME) @map("billing_type")
+  subscriptionPlanId String?     @map("subscription_plan_id")
+  riskContribution   Json        @default("{}") @map("risk_contribution")
+  createdAt          DateTime    @default(now()) @map("created_at")
+
+  quoteVersion     QuoteVersion      @relation(fields: [quoteVersionId], references: [id], onDelete: Cascade)
+  product          Product           @relation(fields: [productId], references: [id])
+  variant          ProductVariant?   @relation(fields: [variantId], references: [id])
+  subscriptionPlan SubscriptionPlan? @relation(fields: [subscriptionPlanId], references: [id])
+  orderLines       OrderLine[]
+  fulfillmentAllocations FulfillmentAllocation[]
+  backorders       Backorder[]
+
+  @@index([quoteVersionId, lineNumber])
+  @@map("quote_lines")
+}
+
+model ApprovalPolicy {
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
+  name           String
+  version        Int          @default(1)
+  status         PolicyStatus @default(ACTIVE)
+  predicates     Json         @default("{}")
+  priority       Int          @default(0)
+  effectiveFrom  DateTime     @map("effective_from")
+  effectiveTo    DateTime?    @map("effective_to")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  organization Organization          @relation(fields: [organizationId], references: [id])
+  stepTemplates ApprovalStepTemplate[]
+
+  @@index([organizationId, status, priority])
+  @@map("approval_policies")
+}
+
+model ApprovalStepTemplate {
+  id               String @id @default(cuid())
+  organizationId   String @map("organization_id")
+  approvalPolicyId String @map("approval_policy_id")
+  sequence         Int
+  requiredCapability String @map("required_capability")
+  roleHint         Role?  @map("role_hint")
+  slaHours         Int?   @map("sla_hours")
+
+  approvalPolicy ApprovalPolicy @relation(fields: [approvalPolicyId], references: [id], onDelete: Cascade)
+
+  @@unique([approvalPolicyId, sequence])
+  @@map("approval_step_templates")
+}
+
+model ApprovalRequest {
+  id               String                @id @default(cuid())
+  organizationId   String                @map("organization_id")
+  quoteVersionId   String                @map("quote_version_id")
+  termsFingerprint String                @map("terms_fingerprint")
+  status           ApprovalRequestStatus @default(PENDING)
+  ruleFacts        Json                  @default("{}") @map("rule_facts")
+  matchedPolicies  Json                  @default("[]") @map("matched_policies")
+  routeReason      String?               @map("route_reason")
+  explainerData    Json                  @default("{}") @map("explainer_data")
+  createdAt        DateTime              @default(now()) @map("created_at")
+  updatedAt        DateTime              @updatedAt @map("updated_at")
+
+  quoteVersion QuoteVersion       @relation(fields: [quoteVersionId], references: [id])
+  steps        ApprovalStep[]
+  decisions    ApprovalDecision[]
+
+  @@index([organizationId, status])
+  @@index([termsFingerprint])
+  @@map("approval_requests")
+}
+
+model ApprovalStep {
+  id                String             @id @default(cuid())
+  organizationId    String             @map("organization_id")
+  approvalRequestId String             @map("approval_request_id")
+  sequence          Int
+  requiredCapability String            @map("required_capability")
+  assigneeId        String?            @map("assignee_id")
+  delegateId        String?            @map("delegate_id")
+  status            ApprovalStepStatus @default(PENDING)
+  dueAt             DateTime?          @map("due_at")
+  activatedAt       DateTime?          @map("activated_at")
+  completedAt       DateTime?          @map("completed_at")
+
+  approvalRequest ApprovalRequest    @relation(fields: [approvalRequestId], references: [id], onDelete: Cascade)
+  assignee        User?              @relation("StepAssignee", fields: [assigneeId], references: [id])
+  decisions       ApprovalDecision[]
+
+  @@unique([approvalRequestId, sequence])
+  @@index([organizationId, assigneeId, status])
+  @@index([dueAt, status])
+  @@map("approval_steps")
+}
+
+model ApprovalDecision {
+  id                String                 @id @default(cuid())
+  organizationId    String                 @map("organization_id")
+  approvalRequestId String                 @map("approval_request_id")
+  approvalStepId    String                 @map("approval_step_id")
+  actorId           String                 @map("actor_id")
+  action            ApprovalDecisionAction
+  reason            String?
+  createdAt         DateTime               @default(now()) @map("created_at")
+
+  approvalRequest ApprovalRequest @relation(fields: [approvalRequestId], references: [id])
+  approvalStep    ApprovalStep    @relation(fields: [approvalStepId], references: [id])
+  actor           User            @relation(fields: [actorId], references: [id])
+
+  @@index([approvalRequestId, createdAt])
+  @@map("approval_decisions")
+}
+
+model NegotiationThread {
+  id             String                  @id @default(cuid())
+  organizationId String                  @map("organization_id")
+  quoteId        String                  @map("quote_id")
+  status         NegotiationThreadStatus @default(OPEN)
+  createdAt      DateTime                @default(now()) @map("created_at")
+  updatedAt      DateTime                @updatedAt @map("updated_at")
+
+  quote    Quote                 @relation(fields: [quoteId], references: [id])
+  messages NegotiationMessage[]
+
+  @@index([organizationId, quoteId])
+  @@map("negotiation_threads")
+}
+
+model NegotiationMessage {
+  id                  String   @id @default(cuid())
+  organizationId      String   @map("organization_id")
+  negotiationThreadId String   @map("negotiation_thread_id")
+  authorType          String   @map("author_type")
+  authorId            String   @map("author_id")
+  body                String
+  quoteLineId         String?  @map("quote_line_id")
+  createdAt           DateTime @default(now()) @map("created_at")
+
+  negotiationThread NegotiationThread @relation(fields: [negotiationThreadId], references: [id], onDelete: Cascade)
+
+  @@index([negotiationThreadId, createdAt])
+  @@map("negotiation_messages")
+}
+
+model ChangeRequest {
+  id             String              @id @default(cuid())
+  organizationId String              @map("organization_id")
+  quoteVersionId String              @map("quote_version_id")
+  quoteLineId    String?             @map("quote_line_id")
+  type           ChangeRequestType
+  status         ChangeRequestStatus @default(PENDING)
+  requestedValue Json                @map("requested_value")
+  comment        String?
+  createdAt      DateTime            @default(now()) @map("created_at")
+  resolvedAt     DateTime?           @map("resolved_at")
+
+  quoteVersion QuoteVersion @relation(fields: [quoteVersionId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("change_requests")
+}
+
+model RecommendationInteraction {
+  id             String                      @id @default(cuid())
+  organizationId String                      @map("organization_id")
+  quoteId        String                      @map("quote_id")
+  productId      String                      @map("product_id")
+  interaction    RecommendationInteractionType
+  marginDelta    Decimal?                    @map("margin_delta") @db.Decimal(19, 4)
+  createdAt      DateTime                    @default(now()) @map("created_at")
+
+  quote Quote @relation(fields: [quoteId], references: [id])
+
+  @@index([quoteId, productId])
+  @@map("recommendation_interactions")
+}
+
+// ─── Inventory & Fulfillment ─────────────────────────────────────────────────
+
+model Warehouse {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  name           String
+  code           String
+  address        Json     @default("{}")
+  shippingCostWeight Decimal @default(1) @map("shipping_cost_weight") @db.Decimal(19, 4)
+  leadTimeDays   Int      @default(1) @map("lead_time_days")
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization       Organization        @relation(fields: [organizationId], references: [id])
+  inventoryBalances  InventoryBalance[]
+  stockMovements     StockMovement[]
+  stockReservations  StockReservation[]
+  fulfillmentAllocations FulfillmentAllocation[]
+  shipments          Shipment[]
+
+  @@unique([organizationId, code])
+  @@map("warehouses")
+}
+
+model InventoryBalance {
+  id             String  @id @default(cuid())
+  organizationId String  @map("organization_id")
+  warehouseId    String  @map("warehouse_id")
+  productId      String  @map("product_id")
+  variantId      String? @map("variant_id")
+  onHand         Decimal @default(0) @map("on_hand") @db.Decimal(19, 4)
+  reserved       Decimal @default(0) @db.Decimal(19, 4)
+  available      Decimal @default(0) @db.Decimal(19, 4)
+  incoming       Decimal @default(0) @db.Decimal(19, 4)
+  revision       Int     @default(0)
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  warehouse Warehouse       @relation(fields: [warehouseId], references: [id])
+  product   Product         @relation(fields: [productId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([warehouseId, productId, variantId])
+  @@index([organizationId, productId])
+  @@map("inventory_balances")
+}
+
+model StockMovement {
+  id             String            @id @default(cuid())
+  organizationId String            @map("organization_id")
+  warehouseId    String            @map("warehouse_id")
+  productId      String            @map("product_id")
+  variantId      String?           @map("variant_id")
+  type           StockMovementType
+  quantity       Decimal           @db.Decimal(19, 4)
+  referenceType  String?           @map("reference_type")
+  referenceId    String?           @map("reference_id")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@index([organizationId, warehouseId, createdAt])
+  @@map("stock_movements")
+}
+
+model StockReservation {
+  id             String                 @id @default(cuid())
+  organizationId String                 @map("organization_id")
+  warehouseId    String                 @map("warehouse_id")
+  orderLineId    String                 @map("order_line_id")
+  quantity       Decimal                @db.Decimal(19, 4)
+  status         StockReservationStatus @default(PENDING)
+  createdAt      DateTime               @default(now()) @map("created_at")
+  updatedAt      DateTime               @updatedAt @map("updated_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  orderLine OrderLine @relation(fields: [orderLineId], references: [id])
+
+  @@index([organizationId, warehouseId, status])
+  @@map("stock_reservations")
+}
+
+model FulfillmentPlan {
+  id             String                @id @default(cuid())
+  organizationId String                @map("organization_id")
+  orderId        String                @map("order_id")
+  status         FulfillmentPlanStatus @default(PREVIEW)
+  snapshot       Json                  @default("{}")
+  objectiveValues Json                 @default("{}") @map("objective_values")
+  overrideReason String?               @map("override_reason")
+  createdAt      DateTime              @default(now()) @map("created_at")
+  acceptedAt     DateTime?             @map("accepted_at")
+
+  order       Order                   @relation(fields: [orderId], references: [id])
+  allocations FulfillmentAllocation[]
+
+  @@index([organizationId, orderId])
+  @@map("fulfillment_plans")
+}
+
+model FulfillmentAllocation {
+  id                String   @id @default(cuid())
+  organizationId    String   @map("organization_id")
+  fulfillmentPlanId String   @map("fulfillment_plan_id")
+  orderLineId       String?  @map("order_line_id")
+  quoteLineId       String?  @map("quote_line_id")
+  warehouseId       String   @map("warehouse_id")
+  assignedQuantity  Decimal  @map("assigned_quantity") @db.Decimal(19, 4)
+  estimatedCost     Decimal  @default(0) @map("estimated_cost") @db.Decimal(19, 4)
+  promisedDate      DateTime? @map("promised_date")
+
+  fulfillmentPlan FulfillmentPlan @relation(fields: [fulfillmentPlanId], references: [id], onDelete: Cascade)
+  warehouse       Warehouse       @relation(fields: [warehouseId], references: [id])
+  quoteLine       QuoteLine?      @relation(fields: [quoteLineId], references: [id])
+
+  @@index([fulfillmentPlanId])
+  @@map("fulfillment_allocations")
+}
+
+model Shipment {
+  id             String         @id @default(cuid())
+  organizationId String         @map("organization_id")
+  warehouseId    String         @map("warehouse_id")
+  orderId        String         @map("order_id")
+  status         ShipmentStatus @default(PENDING)
+  promisedDate   DateTime?      @map("promised_date")
+  shippedDate    DateTime?      @map("shipped_date")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  warehouse Warehouse @relation(fields: [warehouseId], references: [id])
+  order     Order     @relation(fields: [orderId], references: [id])
+
+  @@index([organizationId, orderId, status])
+  @@map("shipments")
+}
+
+model Backorder {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  orderLineId    String?         @map("order_line_id")
+  quoteLineId    String          @map("quote_line_id")
+  remainingQty   Decimal         @map("remaining_qty") @db.Decimal(19, 4)
+  status         BackorderStatus @default(OPEN)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  quoteLine QuoteLine @relation(fields: [quoteLineId], references: [id])
+
+  @@index([organizationId, status])
+  @@map("backorders")
+}
+
+// ─── Orders & Billing ────────────────────────────────────────────────────────
+
+model Order {
+  id               String      @id @default(cuid())
+  organizationId   String      @map("organization_id")
+  quoteId          String      @map("quote_id")
+  quoteVersionId   String      @map("quote_version_id")
+  customerAccountId String     @map("customer_account_id")
+  orderNumber      String      @map("order_number")
+  status           OrderStatus @default(CONFIRMED)
+  termsFingerprint String      @map("terms_fingerprint")
+  currency         String      @default("USD")
+  subtotal         Decimal     @default(0) @db.Decimal(19, 4)
+  taxTotal         Decimal     @default(0) @map("tax_total") @db.Decimal(19, 4)
+  total            Decimal     @default(0) @db.Decimal(19, 4)
+  confirmedAt      DateTime    @default(now()) @map("confirmed_at")
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  quote           Quote            @relation(fields: [quoteId], references: [id])
+  customerAccount CustomerAccount  @relation(fields: [customerAccountId], references: [id])
+  lines           OrderLine[]
+  fulfillmentPlans FulfillmentPlan[]
+  shipments       Shipment[]
+  subscriptions   Subscription[]
+  invoices        Invoice[]
+
+  @@unique([organizationId, orderNumber])
+  @@index([organizationId, status])
+  @@map("orders")
+}
+
+model OrderLine {
+  id                 String      @id @default(cuid())
+  organizationId     String      @map("organization_id")
+  orderId            String      @map("order_id")
+  quoteLineId        String      @map("quote_line_id")
+  productId          String      @map("product_id")
+  variantId          String?     @map("variant_id")
+  lineNumber         Int         @map("line_number")
+  productName        String      @map("product_name")
+  quantity           Decimal     @db.Decimal(19, 4)
+  unitPrice          Decimal     @map("unit_price") @db.Decimal(19, 4)
+  discountAmount     Decimal     @default(0) @map("discount_amount") @db.Decimal(19, 4)
+  taxAmount          Decimal     @default(0) @map("tax_amount") @db.Decimal(19, 4)
+  lineTotal          Decimal     @default(0) @map("line_total") @db.Decimal(19, 4)
+  billingType        BillingType @default(ONE_TIME) @map("billing_type")
+  createdAt          DateTime    @default(now()) @map("created_at")
+
+  order            Order              @relation(fields: [orderId], references: [id])
+  quoteLine        QuoteLine          @relation(fields: [quoteLineId], references: [id])
+  product          Product            @relation(fields: [productId], references: [id])
+  variant          ProductVariant?    @relation(fields: [variantId], references: [id])
+  stockReservations StockReservation[]
+  subscriptionItems SubscriptionItem[]
+
+  @@index([orderId, lineNumber])
+  @@map("order_lines")
+}
+
+model Subscription {
+  id             String             @id @default(cuid())
+  organizationId String             @map("organization_id")
+  orderId        String             @map("order_id")
+  customerAccountId String          @map("customer_account_id")
+  status         SubscriptionStatus @default(ACTIVE)
+  currency       String             @default("USD")
+  startDate      DateTime           @map("start_date")
+  endDate        DateTime?          @map("end_date")
+  cancelledAt    DateTime?          @map("cancelled_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  organization    Organization       @relation(fields: [organizationId], references: [id])
+  order           Order              @relation(fields: [orderId], references: [id])
+  items           SubscriptionItem[]
+  billingSchedules BillingSchedule[]
+  invoices        Invoice[]
+
+  @@index([organizationId, status])
+  @@map("subscriptions")
+}
+
+model SubscriptionItem {
+  id                 String   @id @default(cuid())
+  organizationId     String   @map("organization_id")
+  subscriptionId     String   @map("subscription_id")
+  orderLineId        String   @map("order_line_id")
+  subscriptionPlanId String   @map("subscription_plan_id")
+  productName        String   @map("product_name")
+  quantity           Decimal  @db.Decimal(19, 4)
+  unitPrice          Decimal  @map("unit_price") @db.Decimal(19, 4)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  subscription     Subscription     @relation(fields: [subscriptionId], references: [id])
+  orderLine        OrderLine        @relation(fields: [orderLineId], references: [id])
+  subscriptionPlan SubscriptionPlan @relation(fields: [subscriptionPlanId], references: [id])
+
+  @@map("subscription_items")
+}
+
+model BillingSchedule {
+  id             String                @id @default(cuid())
+  organizationId String                @map("organization_id")
+  subscriptionId String                @map("subscription_id")
+  periodStart    DateTime              @map("period_start")
+  periodEnd      DateTime              @map("period_end")
+  dueDate        DateTime              @map("due_date")
+  amount         Decimal               @db.Decimal(19, 4)
+  status         BillingScheduleStatus @default(PENDING)
+  invoiceId      String?               @unique @map("invoice_id")
+  createdAt      DateTime              @default(now()) @map("created_at")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  invoice      Invoice?     @relation(fields: [invoiceId], references: [id])
+
+  @@unique([subscriptionId, periodStart, periodEnd])
+  @@index([organizationId, dueDate, status])
+  @@map("billing_schedules")
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  organizationId String        @map("organization_id")
+  orderId        String?       @map("order_id")
+  subscriptionId String?       @map("subscription_id")
+  invoiceNumber  String        @map("invoice_number")
+  type           InvoiceType
+  status         InvoiceStatus @default(DRAFT)
+  currency       String        @default("USD")
+  subtotal       Decimal       @default(0) @db.Decimal(19, 4)
+  taxTotal       Decimal       @default(0) @map("tax_total") @db.Decimal(19, 4)
+  total          Decimal       @default(0) @db.Decimal(19, 4)
+  amountPaid     Decimal       @default(0) @map("amount_paid") @db.Decimal(19, 4)
+  dueDate        DateTime      @map("due_date")
+  issuedAt       DateTime?     @map("issued_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+
+  organization    Organization     @relation(fields: [organizationId], references: [id])
+  order           Order?           @relation(fields: [orderId], references: [id])
+  subscription    Subscription?    @relation(fields: [subscriptionId], references: [id])
+  lines           InvoiceLine[]
+  payments        Payment[]
+  creditNotes     CreditNote[]
+  billingSchedule BillingSchedule?
+
+  @@unique([organizationId, invoiceNumber])
+  @@index([organizationId, status, dueDate])
+  @@map("invoices")
+}
+
+model InvoiceLine {
+  id             String  @id @default(cuid())
+  organizationId String  @map("organization_id")
+  invoiceId      String  @map("invoice_id")
+  description    String
+  quantity       Decimal @db.Decimal(19, 4)
+  unitPrice      Decimal @map("unit_price") @db.Decimal(19, 4)
+  taxAmount      Decimal @default(0) @map("tax_amount") @db.Decimal(19, 4)
+  lineTotal      Decimal @default(0) @map("line_total") @db.Decimal(19, 4)
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_lines")
+}
+
+model CreditNote {
+  id             String           @id @default(cuid())
+  organizationId String           @map("organization_id")
+  invoiceId      String           @map("invoice_id")
+  creditNumber   String           @map("credit_number")
+  status         CreditNoteStatus @default(DRAFT)
+  amount         Decimal          @db.Decimal(19, 4)
+  reason         String?
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id])
+
+  @@unique([organizationId, creditNumber])
+  @@map("credit_notes")
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  organizationId String        @map("organization_id")
+  invoiceId      String        @map("invoice_id")
+  amount         Decimal       @db.Decimal(19, 4)
+  method         PaymentMethod
+  reference      String?
+  status         PaymentStatus @default(PENDING)
+  recordedById   String?       @map("recorded_by_id")
+  recordedAt     DateTime      @default(now()) @map("recorded_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  invoice      Invoice      @relation(fields: [invoiceId], references: [id])
+
+  @@index([organizationId, invoiceId])
+  @@map("payments")
+}
+
+// ─── Intelligence & Infrastructure ───────────────────────────────────────────
+
+model ProductAffinity {
+  id             String  @id @default(cuid())
+  organizationId String  @map("organization_id")
+  sourceProductId String @map("source_product_id")
+  targetProductId String @map("target_product_id")
+  affinityScore  Decimal @map("affinity_score") @db.Decimal(19, 4)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization  Organization @relation(fields: [organizationId], references: [id])
+  sourceProduct Product      @relation("AffinitySource", fields: [sourceProductId], references: [id])
+  targetProduct Product      @relation("AffinityTarget", fields: [targetProductId], references: [id])
+
+  @@unique([organizationId, sourceProductId, targetProductId])
+  @@map("product_affinities")
+}
+
+model RecommendationRule {
+  id             String  @id @default(cuid())
+  organizationId String  @map("organization_id")
+  name           String
+  productId      String? @map("product_id")
+  weights        Json    @default("{}")
+  marginFloor    Decimal @default(0) @map("margin_floor") @db.Decimal(19, 4)
+  active         Boolean @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  product      Product?     @relation(fields: [productId], references: [id])
+
+  @@map("recommendation_rules")
+}
+
+model DealHealthSnapshot {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  snapshotDate   DateTime @map("snapshot_date")
+  metrics        Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, snapshotDate])
+  @@map("deal_health_snapshots")
+}
+
+model Alert {
+  id             String        @id @default(cuid())
+  organizationId String        @map("organization_id")
+  quoteId        String?       @map("quote_id")
+  alertType      String        @map("alert_type")
+  severity       AlertSeverity @default(INFO)
+  title          String
+  message        String
+  metadata       Json          @default("{}")
+  acknowledgedAt DateTime?     @map("acknowledged_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId, severity, createdAt])
+  @@map("alerts")
+}
+
+model AuditEvent {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  actorId        String?  @map("actor_id")
+  entityType     String   @map("entity_type")
+  entityId       String   @map("entity_id")
+  eventType      String   @map("event_type")
+  beforeSummary  Json?    @map("before_summary")
+  afterSummary   Json?    @map("after_summary")
+  metadata       Json     @default("{}")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  actor        User?        @relation(fields: [actorId], references: [id])
+
+  @@index([organizationId, entityType, entityId, createdAt])
+  @@index([organizationId, eventType, createdAt])
+  @@map("audit_events")
+}
+
+model DealEvent {
+  id             String              @id @default(cuid())
+  organizationId String              @map("organization_id")
+  quoteId        String?             @map("quote_id")
+  eventType      String              @map("event_type")
+  title          String
+  description    String?
+  visibility     DealEventVisibility @default(INTERNAL)
+  actorId        String?             @map("actor_id")
+  metadata       Json                @default("{}")
+  createdAt      DateTime            @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  quote        Quote?       @relation(fields: [quoteId], references: [id])
+
+  @@index([organizationId, quoteId, createdAt])
+  @@map("deal_events")
+}
+
+model OutboxEvent {
+  id             String            @id @default(cuid())
+  organizationId String            @map("organization_id")
+  eventType      String            @map("event_type")
+  payload        Json              @default("{}")
+  dedupeKey      String?           @unique @map("dedupe_key")
+  status         OutboxEventStatus @default(PENDING)
+  attempts       Int               @default(0)
+  lastError      String?           @map("last_error")
+  availableAt    DateTime          @default(now()) @map("available_at")
+  processedAt    DateTime?         @map("processed_at")
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([status, availableAt])
+  @@map("outbox_events")
+}
+
+model IdempotencyRecord {
+  id             String   @id @default(cuid())
+  organizationId String   @map("organization_id")
+  idempotencyKey String   @map("idempotency_key")
+  actorId        String?  @map("actor_id")
+  route          String
+  command        String
+  resultRef      String?  @map("result_ref")
+  responseBody   Json?    @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@unique([organizationId, idempotencyKey])
+  @@index([expiresAt])
+  @@map("idempotency_records")
+}
+
+model ExportJob {
+  id             String          @id @default(cuid())
+  organizationId String          @map("organization_id")
+  requestedById  String          @map("requested_by_id")
+  reportType     String          @map("report_type")
+  filters        Json            @default("{}")
+  format         ExportFormat
+  status         ExportJobStatus @default(PENDING)
+  resultLocation String?         @map("result_location")
+  error          String?
+  expiresAt      DateTime?       @map("expires_at")
+  createdAt      DateTime        @default(now()) @map("created_at")
+  completedAt    DateTime?       @map("completed_at")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  requestedBy  User         @relation(fields: [requestedById], references: [id])
+
+  @@index([organizationId, status])
+  @@map("export_jobs")
 }
