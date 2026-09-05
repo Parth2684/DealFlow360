@@ -48,6 +48,7 @@ export class AuthService {
           lastName: input.lastName,
         },
       });
+      
 
       const roleAssignment = await tx.roleAssignment.create({
         data: {

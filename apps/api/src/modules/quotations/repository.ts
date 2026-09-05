@@ -89,7 +89,7 @@ export class QuoteRepository {
   async getPriceRules(organizationId: string, tierId: string) {
     const now = new Date();
     const priceList = await prisma.priceList.findFirst({
-      where: {
+      wtake: 50,here: {
         organizationId,
         active: true,
         effectiveFrom: { lte: now },

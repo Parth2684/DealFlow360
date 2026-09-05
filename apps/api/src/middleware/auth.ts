@@ -76,7 +76,7 @@ function extractBearer(header?: string): string | undefined {
 }
 
 export function signSessionToken(payload: SessionPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "8h" });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: 24*60*7 });
 }
 
 export function requireCapability(...capabilities: string[]) {
