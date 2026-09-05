@@ -22,7 +22,7 @@ export class QuoteRepository {
       include: {
         customerAccount: true,
         owner: true,
-        currentVersion: true,
+        currentVersion: { include: { lines: { orderBy: { lineNumber: "asc" } } } },
       },
       orderBy: { updatedAt: "desc" },
       take: 50,

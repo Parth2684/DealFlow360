@@ -2,7 +2,7 @@ import express, { type Express } from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import { authRouter } from "./modules/auth/routes.js";
-// import { quotesRouter } from "./modules/quotations/routes.js";
+import { quotesRouter } from "./modules/quotations/routes.js";
 // import { approvalsRouter } from "./modules/approvals/routes.js";
 // import { productsRouter, customersRouter, warehousesRouter, subscriptionPlansRouter } from "./modules/catalog/routes.js";
 // import { createRecommendationsRouter } from "./modules/recommendations/routes.js";
@@ -49,7 +49,7 @@ export function createApp(): Express {
 
   const v1 = express.Router();
   v1.use("/auth", authRouter);
-  // v1.use("/quotes", quotesRouter);
+  v1.use("/quotes", quotesRouter);
   // v1.use("/quotes/:quoteId/recommendations", createRecommendationsRouter());
   // v1.use("/approvals", approvalsRouter);
   // v1.use("/products", productsRouter);
