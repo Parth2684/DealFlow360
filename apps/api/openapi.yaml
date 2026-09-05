@@ -1,0 +1,1903 @@
+openapi: 3.0.3
+info:
+  title: DealFlow360 API
+  description: Comprehensive quotation-to-cash platform API
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Development server
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Service is healthy
+        '503':
+          description: Service is degraded
+
+  /auth/signup:
+    post:
+      summary: Sign up a new user
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                organizationName:
+                  type: string
+      responses:
+        '201':
+          description: User created
+
+  /auth/login:
+    post:
+      summary: Login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+
+  /auth/logout:
+    post:
+      summary: Logout
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout successful
+
+  /auth/me:
+    get:
+      summary: Get current user
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Current user info
+
+  /quotes:
+    get:
+      summary: List quotes
+      tags:
+        - Quotations
+      responses:
+        '200':
+          description: List of quotes
+    post:
+      summary: Create quote
+      tags:
+        - Quotations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerAccountId:
+                  type: string
+                currency:
+                  type: string
+                paymentTermsDays:
+                  type: number
+                expiresAt:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Quote created
+
+  /quotes/{quoteId}:
+    get:
+      summary: Get quote
+      tags:
+        - Quotations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quote details
+
+  /quotes/{quoteId}/lines:
+    post:
+      summary: Add line to quote
+      tags:
+        - Quotations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                variantId:
+                  type: string
+                quantity:
+                  type: string
+                discountPercent:
+                  type: string
+                billingType:
+                  type: string
+                  enum: [ONE_TIME, RECURRING]
+                subscriptionPlanId:
+                  type: string
+      responses:
+        '201':
+          description: Line added
+
+  /quotes/{quoteId}/calculate:
+    post:
+      summary: Calculate quote totals
+      tags:
+        - Quotations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                revision:
+                  type: number
+      responses:
+        '200':
+          description: Calculation results
+
+  /quotes/{quoteId}/submit:
+    post:
+      summary: Submit quote for approval
+      tags:
+        - Quotations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                revision:
+                  type: number
+      responses:
+        '200':
+          description: Quote submitted
+
+  /quotes/{quoteId}/recommendations:
+    get:
+      summary: Get upsell recommendations
+      tags:
+        - Recommendations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recommendations list
+
+  /quotes/{quoteId}/recommendations/{productId}/dismiss:
+    post:
+      summary: Dismiss recommendation
+      tags:
+        - Recommendations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Recommendation dismissed
+
+  /quotes/{quoteId}/recommendations/{productId}/add:
+    post:
+      summary: Add recommended product
+      tags:
+        - Recommendations
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Product added
+
+  /approvals:
+    get:
+      summary: Get approval inbox
+      tags:
+        - Approvals
+      responses:
+        '200':
+          description: Approval inbox items
+
+  /approvals/{requestId}/decide:
+    post:
+      summary: Make approval decision
+      tags:
+        - Approvals
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [APPROVE, REJECT, REQUEST_REVISION]
+                comment:
+                  type: string
+      responses:
+        '200':
+          description: Decision recorded
+
+  /products:
+    get:
+      summary: List products
+      tags:
+        - Catalog
+      responses:
+        '200':
+          description: Product list
+
+  /customers:
+    get:
+      summary: List customers (catalog)
+      tags:
+        - Catalog
+      responses:
+        '200':
+          description: Customer list
+
+  /warehouses:
+    get:
+      summary: List warehouses (catalog)
+      tags:
+        - Catalog
+      responses:
+        '200':
+          description: Warehouse list
+
+  /subscription-plans:
+    get:
+      summary: List subscription plans (catalog)
+      tags:
+        - Catalog
+      responses:
+        '200':
+          description: Subscription plan list
+
+  /customer-accounts/tiers:
+    get:
+      summary: List customer tiers
+      tags:
+        - Customers
+      responses:
+        '200':
+          description: Tier list
+    post:
+      summary: Create customer tier
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+                priority:
+                  type: number
+      responses:
+        '201':
+          description: Tier created
+
+  /customer-accounts/tiers/{tierId}:
+    patch:
+      summary: Update customer tier
+      tags:
+        - Customers
+      parameters:
+        - name: tierId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Tier updated
+
+  /customer-accounts/accounts:
+    get:
+      summary: List customer accounts
+      tags:
+        - Customers
+      responses:
+        '200':
+          description: Account list
+    post:
+      summary: Create customer account
+      tags:
+        - Customers
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                tierId:
+                  type: string
+                salesTeamId:
+                  type: string
+                assignedRepId:
+                  type: string
+                preferredCurrency:
+                  type: string
+                paymentTermsDays:
+                  type: number
+                creditLimit:
+                  type: string
+      responses:
+        '201':
+          description: Account created
+
+  /customer-accounts/accounts/{customerId}:
+    get:
+      summary: Get customer account
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account details
+    patch:
+      summary: Update customer account
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                tierId:
+                  type: string
+                paymentTermsDays:
+                  type: number
+                creditLimit:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Account updated
+
+  /customer-accounts/accounts/{customerId}/contacts:
+    get:
+      summary: List customer contacts
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Contact list
+    post:
+      summary: Create customer contact
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                isPrimary:
+                  type: boolean
+                portalEnabled:
+                  type: boolean
+      responses:
+        '201':
+          description: Contact created
+
+  /customer-accounts/accounts/{customerId}/contacts/{contactId}:
+    patch:
+      summary: Update customer contact
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                isPrimary:
+                  type: boolean
+                portalEnabled:
+                  type: boolean
+      responses:
+        '200':
+          description: Contact updated
+
+  /pricing/price-lists:
+    get:
+      summary: List price lists
+      tags:
+        - Pricing
+      responses:
+        '200':
+          description: Price list
+    post:
+      summary: Create price list
+      tags:
+        - Pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                currency:
+                  type: string
+                effectiveFrom:
+                  type: string
+                  format: date-time
+                effectiveTo:
+                  type: string
+                  format: date-time
+                priority:
+                  type: number
+      responses:
+        '201':
+          description: Price list created
+
+  /pricing/price-lists/{priceListId}:
+    patch:
+      summary: Update price list
+      tags:
+        - Pricing
+      parameters:
+        - name: priceListId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Price list updated
+
+  /pricing/price-lists/{priceListId}/rules:
+    get:
+      summary: List price rules
+      tags:
+        - Pricing
+      parameters:
+        - name: priceListId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Price rules
+    post:
+      summary: Create price rule
+      tags:
+        - Pricing
+      parameters:
+        - name: priceListId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                categoryId:
+                  type: string
+                tierId:
+                  type: string
+                minQuantity:
+                  type: string
+                unitPrice:
+                  type: string
+                priority:
+                  type: number
+                effectiveFrom:
+                  type: string
+                  format: date-time
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Price rule created
+
+  /pricing/price-rules/{ruleId}:
+    patch:
+      summary: Update price rule
+      tags:
+        - Pricing
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                unitPrice:
+                  type: string
+                priority:
+                  type: number
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Price rule updated
+    delete:
+      summary: Delete price rule
+      tags:
+        - Pricing
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Price rule deleted
+
+  /pricing/discount-limits:
+    get:
+      summary: List discount limits
+      tags:
+        - Pricing
+      responses:
+        '200':
+          description: Discount limits
+    post:
+      summary: Create discount limit
+      tags:
+        - Pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                tierId:
+                  type: string
+                categoryId:
+                  type: string
+                productId:
+                  type: string
+                maxDiscountPct:
+                  type: string
+                priority:
+                  type: number
+                effectiveFrom:
+                  type: string
+                  format: date-time
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Discount limit created
+
+  /pricing/discount-limits/{limitId}:
+    patch:
+      summary: Update discount limit
+      tags:
+        - Pricing
+      parameters:
+        - name: limitId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxDiscountPct:
+                  type: string
+                active:
+                  type: boolean
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Discount limit updated
+
+  /pricing/taxes:
+    get:
+      summary: List taxes
+      tags:
+        - Pricing
+      responses:
+        '200':
+          description: Tax list
+    post:
+      summary: Create tax
+      tags:
+        - Pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                rate:
+                  type: string
+                behavior:
+                  type: string
+                  enum: [INCLUSIVE, EXCLUSIVE]
+                effectiveFrom:
+                  type: string
+                  format: date-time
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Tax created
+
+  /pricing/taxes/{taxId}:
+    patch:
+      summary: Update tax
+      tags:
+        - Pricing
+      parameters:
+        - name: taxId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rate:
+                  type: string
+                active:
+                  type: boolean
+                effectiveTo:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Tax updated
+
+  /pricing/subscription-plans:
+    get:
+      summary: List subscription plans
+      tags:
+        - Pricing
+      responses:
+        '200':
+          description: Subscription plans
+    post:
+      summary: Create subscription plan
+      tags:
+        - Pricing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                code:
+                  type: string
+                interval:
+                  type: string
+                  enum: [DAY, WEEK, MONTH, YEAR]
+                intervalCount:
+                  type: number
+                prorationConvention:
+                  type: string
+                  enum: [CALENDAR_DAYS, THIRTY_DAY_MONTH]
+                cancellationRules:
+                  type: object
+      responses:
+        '201':
+          description: Subscription plan created
+
+  /pricing/subscription-plans/{planId}:
+    patch:
+      summary: Update subscription plan
+      tags:
+        - Pricing
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                active:
+                  type: boolean
+                cancellationRules:
+                  type: object
+      responses:
+        '200':
+          description: Subscription plan updated
+
+  /inventory/warehouses:
+    get:
+      summary: List warehouses
+      tags:
+        - Inventory
+      responses:
+        '200':
+          description: Warehouse list
+    post:
+      summary: Create warehouse
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                leadTimeDays:
+                  type: number
+                shippingCostWeight:
+                  type: number
+      responses:
+        '201':
+          description: Warehouse created
+
+  /inventory/warehouses/{warehouseId}:
+    patch:
+      summary: Update warehouse
+      tags:
+        - Inventory
+      parameters:
+        - name: warehouseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                address:
+                  type: string
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: Warehouse updated
+
+  /inventory/warehouses/{warehouseId}/balances:
+    get:
+      summary: List inventory balances
+      tags:
+        - Inventory
+      parameters:
+        - name: warehouseId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Inventory balances
+
+  /inventory/warehouses/{warehouseId}/adjust:
+    post:
+      summary: Adjust inventory
+      tags:
+        - Inventory
+      parameters:
+        - name: warehouseId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: string
+                variantId:
+                  type: string
+                quantity:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Inventory adjusted
+
+  /inventory/stock-movements:
+    get:
+      summary: List stock movements
+      tags:
+        - Inventory
+      responses:
+        '200':
+          description: Stock movements
+
+  /inventory/stock-movements/receipt:
+    post:
+      summary: Create stock receipt
+      tags:
+        - Inventory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                warehouseId:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productId:
+                        type: string
+                      variantId:
+                        type: string
+                      quantity:
+                        type: string
+                reference:
+                  type: string
+      responses:
+        '201':
+          description: Receipt created
+
+  /fulfillment/orders/{orderId}/fulfillment/preview:
+    get:
+      summary: Preview fulfillment allocation
+      tags:
+        - Fulfillment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Fulfillment preview
+
+  /fulfillment/orders/{orderId}/fulfillment/reserve:
+    post:
+      summary: Reserve stock for fulfillment
+      tags:
+        - Fulfillment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planId:
+                  type: string
+      responses:
+        '200':
+          description: Stock reserved
+
+  /fulfillment/orders/{orderId}/fulfillment/override:
+    post:
+      summary: Override fulfillment allocation
+      tags:
+        - Fulfillment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                allocations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      warehouseId:
+                        type: string
+                      quoteLineId:
+                        type: string
+                      quantity:
+                        type: string
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Allocation overridden
+
+  /fulfillment/orders/{orderId}/shipments:
+    get:
+      summary: List shipments for order
+      tags:
+        - Fulfillment
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Shipments list
+
+  /fulfillment/shipments/{shipmentId}/ship:
+    post:
+      summary: Ship shipment
+      tags:
+        - Fulfillment
+      parameters:
+        - name: shipmentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                trackingNumber:
+                  type: string
+      responses:
+        '200':
+          description: Shipment shipped
+
+  /fulfillment/backorders:
+    get:
+      summary: List backorders
+      tags:
+        - Fulfillment
+      responses:
+        '200':
+          description: Backorders list
+
+  /fulfillment/backorders/{backorderId}/consolidate:
+    post:
+      summary: Consolidate backorder
+      tags:
+        - Fulfillment
+      parameters:
+        - name: backorderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Backorder consolidated
+
+  /orders:
+    get:
+      summary: List orders
+      tags:
+        - Orders
+      responses:
+        '200':
+          description: Orders list
+
+  /orders/{orderId}:
+    get:
+      summary: Get order
+      tags:
+        - Orders
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order details
+
+  /orders/quotes/{quoteId}/confirm:
+    post:
+      summary: Confirm order from quote
+      tags:
+        - Orders
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                revision:
+                  type: number
+      responses:
+        '201':
+          description: Order created
+
+  /orders/{orderId}/billing:
+    get:
+      summary: Get order billing info
+      tags:
+        - Orders
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Billing info
+
+  /subscriptions:
+    get:
+      summary: List subscriptions
+      tags:
+        - Subscriptions
+      responses:
+        '200':
+          description: Subscriptions list
+
+  /subscriptions/{subscriptionId}:
+    get:
+      summary: Get subscription
+      tags:
+        - Subscriptions
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Subscription details
+
+  /subscriptions/{subscriptionId}/preview-change:
+    post:
+      summary: Preview subscription change
+      tags:
+        - Subscriptions
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: number
+                planId:
+                  type: string
+      responses:
+        '200':
+          description: Change preview
+
+  /subscriptions/{subscriptionId}/change:
+    post:
+      summary: Change subscription
+      tags:
+        - Subscriptions
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: number
+                planId:
+                  type: string
+                effectiveDate:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Subscription changed
+
+  /subscriptions/{subscriptionId}/cancel:
+    post:
+      summary: Cancel subscription
+      tags:
+        - Subscriptions
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                effectiveDate:
+                  type: string
+                  format: date-time
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Subscription cancelled
+
+  /subscriptions/{subscriptionId}/schedules:
+    get:
+      summary: List billing schedules
+      tags:
+        - Subscriptions
+      parameters:
+        - name: subscriptionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Billing schedules
+
+  /billing/invoices:
+    get:
+      summary: List invoices
+      tags:
+        - Billing
+      responses:
+        '200':
+          description: Invoice list
+
+  /billing/invoices/{invoiceId}:
+    get:
+      summary: Get invoice
+      tags:
+        - Billing
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice details
+
+  /billing/invoices/{invoiceId}/issue:
+    post:
+      summary: Issue invoice
+      tags:
+        - Billing
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice issued
+
+  /billing/invoices/{invoiceId}/payments:
+    get:
+      summary: List invoice payments
+      tags:
+        - Billing
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Payments list
+    post:
+      summary: Record payment
+      tags:
+        - Billing
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: string
+                method:
+                  type: string
+                  enum: [BANK_TRANSFER, CREDIT_CARD, CHECK, OTHER]
+                reference:
+                  type: string
+                paymentDate:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Payment recorded
+
+  /billing/credit-notes:
+    get:
+      summary: List credit notes
+      tags:
+        - Billing
+      responses:
+        '200':
+          description: Credit notes list
+
+  /billing/credit-notes/{creditNoteId}/apply:
+    post:
+      summary: Apply credit note to invoice
+      tags:
+        - Billing
+      parameters:
+        - name: creditNoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                invoiceId:
+                  type: string
+      responses:
+        '200':
+          description: Credit note applied
+
+  /negotiation/portal/{quoteId}:
+    get:
+      summary: Get quote for customer portal
+      tags:
+        - Negotiation
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quote for portal
+
+  /negotiation/portal/{quoteId}/change-request:
+    post:
+      summary: Create change request
+      tags:
+        - Negotiation
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                requestedChanges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      quoteLineId:
+                        type: string
+                      action:
+                        type: string
+                        enum: [REMOVE, CHANGE_QUANTITY, CHANGE_PRICE]
+                      quantity:
+                        type: string
+                      unitPrice:
+                        type: string
+      responses:
+        '201':
+          description: Change request created
+
+  /negotiation/portal/{quoteId}/change-requests:
+    get:
+      summary: List change requests
+      tags:
+        - Negotiation
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Change requests list
+
+  /negotiation/change-requests/{requestId}/counteroffer:
+    post:
+      summary: Create counteroffer
+      tags:
+        - Negotiation
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                proposedChanges:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      quoteLineId:
+                        type: string
+                      quantity:
+                        type: string
+                      unitPrice:
+                        type: string
+                      discountPercent:
+                        type: string
+      responses:
+        '201':
+          description: Counteroffer created
+
+  /negotiation/change-requests/{requestId}/accept:
+    post:
+      summary: Accept change request
+      tags:
+        - Negotiation
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Change request accepted
+
+  /negotiation/change-requests/{requestId}/reject:
+    post:
+      summary: Reject change request
+      tags:
+        - Negotiation
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Change request rejected
+
+  /negotiation/portal/counteroffers/{counterofferId}/accept:
+    post:
+      summary: Accept counteroffer
+      tags:
+        - Negotiation
+      parameters:
+        - name: counterofferId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Counteroffer accepted
+
+  /negotiation/portal/counteroffers/{counterofferId}/reject:
+    post:
+      summary: Reject counteroffer
+      tags:
+        - Negotiation
+      parameters:
+        - name: counterofferId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '200':
+          description: Counteroffer rejected
+
+  /deal-health/alerts:
+    get:
+      summary: List alerts
+      tags:
+        - Deal Health
+      responses:
+        '200':
+          description: Alerts list
+
+  /deal-health/alerts/{alertId}:
+    get:
+      summary: Get alert
+      tags:
+        - Deal Health
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert details
+
+  /deal-health/alerts/{alertId}/acknowledge:
+    post:
+      summary: Acknowledge alert
+      tags:
+        - Deal Health
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Alert acknowledged
+
+  /deal-health/alerts/{alertId}/snooze:
+    post:
+      summary: Snooze alert
+      tags:
+        - Deal Health
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                until:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Alert snoozed
+
+  /deal-health/quotes/{quoteId}/snapshots:
+    get:
+      summary: List deal snapshots
+      tags:
+        - Deal Health
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Snapshots list
+    post:
+      summary: Create deal snapshot
+      tags:
+        - Deal Health
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+      responses:
+        '201':
+          description: Snapshot created
+
+  /deal-health/quotes/{quoteId}/snapshots/{snapshotId}:
+    get:
+      summary: Get deal snapshot
+      tags:
+        - Deal Health
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: snapshotId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Snapshot details
+
+  /deal-health/quotes/{quoteId}/health-score:
+    get:
+      summary: Calculate health score
+      tags:
+        - Deal Health
+      parameters:
+        - name: quoteId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Health score
+
+  /reporting/exports:
+    get:
+      summary: List export jobs
+      tags:
+        - Reporting
+      responses:
+        '200':
+          description: Export jobs list
+    post:
+      summary: Create export job
+      tags:
+        - Reporting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reportType:
+                  type: string
+                  enum: [QUOTES, ORDERS, INVOICES, CUSTOMERS, INVENTORY]
+                format:
+                  type: string
+                  enum: [CSV, XLSX, PDF]
+                filters:
+                  type: object
+      responses:
+        '201':
+          description: Export job created
+
+  /reporting/exports/{jobId}:
+    get:
+      summary: Get export job
+      tags:
+        - Reporting
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Export job details
+
+  /reporting/exports/{jobId}/download:
+    get:
+      summary: Download export
+      tags:
+        - Reporting
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Download URL
+        '202':
+          description: Export still processing
+
+  /reporting/exports/{jobId}:
+    delete:
+      summary: Delete export job
+      tags:
+        - Reporting
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Export job deleted
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: session
