@@ -1,0 +1,23 @@
+{
+  "name": "@repo/contracts",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^7"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./schemas/*": "./src/schemas/*.ts",
+    "./enums": "./src/enums.ts",
+    "./capabilities": "./src/capabilities.ts",
+    "./errors": "./src/errors.ts"
+  }
+}
