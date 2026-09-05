@@ -34,7 +34,8 @@
         "^db:generate"
       ],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "env": ["API_URL"]
     },
     "db:generate": {
       "cache": false
