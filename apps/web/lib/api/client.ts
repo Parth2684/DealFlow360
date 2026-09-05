@@ -10,7 +10,7 @@
  * to do it for us.
  */
 
-const SERVER_API_URL = process.env.API_URL ?? "http://localhost:3000/api/v1";
+const SERVER_API_URL = process.env.API_URL ?? "http://localhost:4000/api/v1";
 const BROWSER_API_BASE = "/api/v1";
 
 export class ApiError extends Error {
