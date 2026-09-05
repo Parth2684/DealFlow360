@@ -5,14 +5,19 @@
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "bun run prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "demo:reset": "bun run prisma/demo-reset.ts"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "prisma": "7.10.0"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.10.0",
-    "@prisma/client": "7.10.0",
+    "@prisma/client": "^7.10.0",
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "pg": "^8.23.0"
   },
