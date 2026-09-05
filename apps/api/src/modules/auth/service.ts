@@ -49,7 +49,7 @@ export class AuthService {
         },
       });
 
-      await tx.roleAssignment.create({
+      const roleAssignment = await tx.roleAssignment.create({
         data: {
           organizationId: org.id,
           userId: user.id,
@@ -72,7 +72,7 @@ export class AuthService {
         payload: { type: "signup", userId: user.id },
       });
 
-      return { org, user };
+      return { org, user: { ...user, roleAssignments: [roleAssignment] } };
     });
 
     const session = await this.createSession(result.user.id, result.org.id);
@@ -118,15 +118,13 @@ export class AuthService {
   }
 
   private async createSession(userId: string, organizationId: string) {
-    const rawToken = generateToken();
-    const tokenHash = hashToken(rawToken);
     const expiresAt = new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000);
 
     const session = await prisma.session.create({
       data: {
         organizationId,
         userId,
-        tokenHash,
+        tokenHash: hashToken(generateToken()),
         expiresAt,
       },
     });
@@ -136,6 +134,11 @@ export class AuthService {
       org: organizationId,
       sid: session.id,
       type: "internal",
+    });
+
+    await prisma.session.update({
+      where: { id: session.id },
+      data: { tokenHash: hashToken(jwt) },
     });
 
     return { session, token: jwt };
