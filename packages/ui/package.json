@@ -34,7 +34,8 @@
     "lint": "eslint src --max-warnings 0"
   },
   "peerDependencies": {
-    "react": "19.2.8"
+    "react": "19.2.8",
+    "next": "16.3.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
@@ -44,7 +45,8 @@
     "@types/react": "19.2.18",
     "eslint": "10.8.1",
     "tailwindcss": "4.3.3",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "next": "16.3.1"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10"

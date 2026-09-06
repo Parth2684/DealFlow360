@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { SystemHealthState } from "../../lib/auth/session";
 import { ThemeToggle } from "../shell/theme-toggle";
 
+
 const healthLabels: Record<SystemHealthState["status"], string> = {
   degraded: "API Degraded",
   offline: "API Offline",
@@ -50,7 +51,7 @@ export function AuthFrame({
           className="pointer-events-none absolute -bottom-48 -left-32 size-[28rem] rounded-pill bg-brand/10 blur-3xl"
         />
 
-        <DealFlowBrand className="relative [&>span:last-child]:text-sidebar-foreground" />
+        <DealFlowBrand className="relative [&>span:last-child]:text-sidebar-foreground" img_src="/logo.png" />
         <div className="relative grid max-w-[36rem] gap-md">
           <p className="m-0 text-caption font-semibold uppercase tracking-wide text-sidebar-foreground-muted">
             Governed quote-to-cash operations
@@ -74,7 +75,7 @@ export function AuthFrame({
       >
         <div className="mx-auto grid w-full max-w-[28rem] gap-lg">
           <div className="flex items-center justify-between gap-sm lg:hidden">
-            <DealFlowBrand />
+            <DealFlowBrand img_src="/logo.png" />
             <Badge tone={healthTone}>{healthLabels[health.status]}</Badge>
           </div>
           <div className="flex items-start justify-between gap-md">

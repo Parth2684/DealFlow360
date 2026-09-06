@@ -51,6 +51,28 @@
         "PORTAL_ORGANIZATION_SLUG"
       ]
     },
+    "start": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "persistent": true,
+      "passThroughEnv": [
+        "API_PUBLIC_URL",
+        "COOKIE_SECURE",
+        "DATABASE_SCHEMA",
+        "DATABASE_URL",
+        "PORT",
+        "PORTAL_SESSION_TTL_MINUTES",
+        "REFRESH_TTL_DAYS",
+        "SESSION_TTL_HOURS",
+        "WEB_ORIGIN",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "SMTP_FROM",
+        "PORTAL_ORGANIZATION_SLUG"
+      ]
+    },
     "db:generate": {
       "cache": false,
       "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
