@@ -1,0 +1,11 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "env": ["API_INTERNAL_URL"]
+    },
+    "dev": {
+      "env": ["API_INTERNAL_URL"]
+    }
+  }
+}

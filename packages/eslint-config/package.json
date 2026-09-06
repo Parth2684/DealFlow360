@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
+  "scripts": {
+    "lint": "eslint \"*.js\" --max-warnings 0"
+  },
   "exports": {
     "./base": "./base.js",
     "./next-js": "./next.js",
@@ -13,7 +16,6 @@
     "@next/eslint-plugin-next": "16.3.1",
     "eslint": "10.8.1",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-only-warn": "1.2.1",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-turbo": "2.10.10",
     "globals": "17.11.0",

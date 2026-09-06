@@ -1,0 +1,31 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["db:generate"],
+      "outputs": ["dist/**"]
+    },
+    "check-types": {
+      "dependsOn": ["db:generate"]
+    },
+    "test": {
+      "dependsOn": ["db:generate"]
+    },
+    "db:seed": {
+      "dependsOn": ["db:generate"],
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL", "DEMO_PASSWORD"]
+    },
+    "demo:reset": {
+      "dependsOn": ["db:generate"],
+      "passThroughEnv": [
+        "DATABASE_SCHEMA",
+        "DATABASE_URL",
+        "DEMO_PASSWORD",
+        "NODE_ENV"
+      ]
+    },
+    "db:generate": {
+      "outputs": ["generated/**"]
+    }
+  }
+}

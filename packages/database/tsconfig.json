@@ -1,0 +1,16 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": ".",
+    "types": ["bun"]
+  },
+  "include": [
+    "generated",
+    "prisma/**/*.ts",
+    "prisma7.config.ts",
+    "src",
+    "tests"
+  ],
+  "exclude": ["dist", "node_modules"]
+}

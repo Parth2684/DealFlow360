@@ -1,28 +1,61 @@
-## Getting Started
+# DealFlow360 Web
 
-First, run the development server:
+This workspace is the Next.js App Router frontend for DealFlow360. It renders the internal quote-to-cash workspace and the customer portal, and it consumes the REST API only. It never imports Prisma or talks to PostgreSQL directly.
+
+## Local Runtime
+
+- Web application: `http://localhost:3001`
+- API service: `http://localhost:3000`
+- Browser API requests: same-origin `/api/v1/*`, rewritten to the API service by Next.js
+- Server Component API requests: `API_INTERNAL_URL`
+
+Copy `.env.example` to `.env.local` when the API runs somewhere other than the documented local default. `API_INTERNAL_URL` must be an origin without the `/api/v1` suffix.
+
+Use Bun from the repository root:
 
 ```bash
-yarn dev
+bun install --frozen-lockfile
+bun run dev
+bun run lint
+bun run check-types
+bun run build
 ```
 
-Open [http://localhost:3001](http://localhost:3001) with your browser to see the result.
+The production build does not require a live API. Protected Server Components handle an unavailable API explicitly at request time.
 
-You can start editing the page by modifying `src/app/page.tsx`. The page auto-updates as you edit the file.
+## Route Boundaries
 
-To create [API routes](https://nextjs.org/docs/app/building-your-application/routing/router-handlers) add an `api/` directory to the `app/` directory with a `route.ts` file. For individual endpoints, create a subfolder in the `api` directory, like `api/hello/route.ts` would map to [http://localhost:3001/api/hello](http://localhost:3001/api/hello).
+- `/login` and `/signup` authenticate internal users.
+- `/portal/login` requests or exchanges a customer magic link.
+- `/workspace` is the protected internal landing route.
+- `/quotations`, `/quotations/new`, and `/quotations/[quoteId]` provide the
+  list, quote creation, and governed three-panel builder.
+- `/pipeline` and `/approvals/[requestId]` provide keyboard-accessible deal
+  movement and sequential decision workspaces.
+- `/orders/[orderId]/fulfillment` and `/orders/[orderId]/billing` keep the
+  operational and financial views of one confirmed order separate.
+- `/deal-health` and `/reports` provide URL-backed analysis, alert actions,
+  background CSV/XLSX/PDF exports, and personal saved filters.
+- `/settings/*` provides customer/tier/contact, product/category/variant/tax,
+  price-list/rule, promotion, discount-policy, approval-chain, warehouse,
+  subscription-plan, and recommendation-rule CRUD.
+- `/portal` is the protected customer landing route, while
+  `/portal/quotations/[quoteId]` uses a separate customer-safe DTO and layout.
+- Internal and portal routes have separate layouts, cookie guards, navigation, and sign-out behavior.
 
-## Learn More
+Navigation is capability-filtered, and every displayed destination has an
+implemented route. The API still enforces the same capability and object scope;
+hiding an action in the browser is never treated as authorization.
 
-To learn more about Next.js, take a look at the following resources:
+## Foundation Contracts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn/foundations/about-nextjs) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_source=github.com&utm_medium=referral&utm_campaign=turborepo-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `lib/api/server.ts` forwards request cookies to the API with `cache: "no-store"` and validates successful responses with shared Zod schemas.
+- `lib/api/browser.ts` sends credentials, applies the correct readable CSRF cookie to unsafe requests, parses RFC 7807 errors, and retries an internal request once after refreshing the session.
+- `lib/auth/session.ts` exposes cached Server Component helpers for the current internal principal, cookie presence, and API health.
+- `components/foundation/app-providers.tsx` owns the browser Query Client.
+- `lib/navigation.ts` is the capability-aware internal navigation registry.
+- `features/quotations/product-browser.tsx` consumes the quote-aware product
+  picker, so price-list resolution and warehouse availability remain
+  server-provided facts.
+- `features/shared/use-idempotency-key.ts` prevents accidental duplicate
+  submission of confirmation, reservation, billing, and payment commands.

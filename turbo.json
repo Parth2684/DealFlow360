@@ -1,31 +1,93 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
+  "globalEnv": ["NODE_ENV"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build", "^db:generate"], 
+      "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**", ".next/**", "!.next/cache/**", "!.next/dev/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
+    },
     "check-types": {
       "dependsOn": ["^build", "^check-types"]
     },
     "dev": {
-      "dependsOn": ["^db:generate"], 
+      "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "passThroughEnv": [
+        "API_PUBLIC_URL",
+        "APPROVAL_ESCALATION_AFTER_HOURS",
+        "COOKIE_SECURE",
+        "DATABASE_SCHEMA",
+        "DATABASE_URL",
+        "MAGIC_LINK_TTL_MINUTES",
+        "PORT",
+        "PORTAL_SESSION_TTL_MINUTES",
+        "REFRESH_TTL_DAYS",
+        "SESSION_TTL_HOURS",
+        "WEB_ORIGIN",
+        "WORKER_APPROVAL_INTERVAL_MS",
+        "WORKER_BACKORDER_INTERVAL_MS",
+        "WORKER_BATCH_SIZE",
+        "WORKER_BILLING_INTERVAL_MS",
+        "WORKER_CLEANUP_INTERVAL_MS",
+        "WORKER_HEALTH_INTERVAL_MS",
+        "WORKER_INVOICE_INTERVAL_MS",
+        "WORKER_POLL_INTERVAL_MS",
+        "SMTP_HOST",
+        "SMTP_PORT",
+        "SMTP_USER",
+        "SMTP_PASS",
+        "SMTP_FROM",
+        "PORTAL_ORGANIZATION_SLUG"
+      ]
     },
     "db:generate": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
     },
     "db:migrate": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
     },
     "db:deploy": {
-      "cache": false
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
+    },
+    "db:seed": {
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_SCHEMA",
+        "DATABASE_URL",
+        "DEMO_PASSWORD",
+        "SEED_STRESS_DATA"
+      ]
+    },
+    "db:status": {
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
+    },
+    "db:validate": {
+      "cache": false,
+      "passThroughEnv": ["DATABASE_SCHEMA", "DATABASE_URL"]
+    },
+    "demo:reset": {
+      "cache": false,
+      "passThroughEnv": [
+        "DATABASE_SCHEMA",
+        "DATABASE_URL",
+        "DEMO_PASSWORD",
+        "NODE_ENV"
+      ]
     }
   }
 }

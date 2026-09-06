@@ -1,12 +1,9 @@
 {
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "lib": ["ES2015"],
     "rootDir": "src",
-    "outDir": "./dist",
-    "strictNullChecks": true,
-    "types": ["bun"],
+    "outDir": "./dist"
   },
   "include": ["src"],
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["dist", "node_modules"]
 }

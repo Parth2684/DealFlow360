@@ -1,16 +1,24 @@
-import { PrismaClient } from "../generated/prisma/client";
+import { PrismaClient } from "../generated/prisma/client.js";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { getDatabaseSettings } from "./database-url.js";
 
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-});
+const globalForDealFlowDatabase = globalThis as typeof globalThis & {
+  dealFlowPrisma?: PrismaClient;
+};
 
-const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+function createPrismaClient(): PrismaClient {
+  const { connectionString, schema } = getDatabaseSettings();
+  const adapter = new PrismaPg({ connectionString }, { schema });
+
+  return new PrismaClient({
+    adapter,
+    errorFormat: process.env.NODE_ENV === "production" ? "minimal" : "pretty",
+  });
+}
 
 export const prisma =
-  globalForPrisma.prisma ||
-  new PrismaClient({
-    adapter,
-  });
+  globalForDealFlowDatabase.dealFlowPrisma ?? createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+if (process.env.NODE_ENV !== "production") {
+  globalForDealFlowDatabase.dealFlowPrisma = prisma;
+}

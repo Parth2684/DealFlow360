@@ -1,35 +1,36 @@
 {
   "name": "api",
-  "module": "index.ts",
+  "module": "src/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun --watch src/index.ts",
-    "build": "bun build src/index.ts --outfile dist/server.js --target bun --minify",
-    "start": "bun dist/server.js",
+    "dev": "bun run --parallel dev:server dev:worker",
+    "dev:server": "bun --watch src/index.ts",
+    "dev:worker": "bun --watch src/worker-main.ts",
+    "build": "bun build src/index.ts src/worker-main.ts --outdir dist --target bun --minify --entry-naming=[name].[ext]",
+    "start": "bun dist/index.js",
+    "start:worker": "bun dist/worker-main.js",
     "check-types": "tsc --noEmit",
-    "lint": "eslint --max-warnings 0"
+    "lint": "eslint --max-warnings 0",
+    "test": "bun test tests"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/bun": "latest",
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "eslint": "^10.9.1"
-  },
-  "peerDependencies": {
-    "typescript": "^7"
-  },
-  "dependencies": {
-    "bcrypt": "^6.0.0",
-    "cookie-parser": "^1.4.7",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "jsonwebtoken": "^9.0.3",
-    "@repo/db": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/bun": "1.4.1",
+    "@types/express": "^5.0.6",
+    "@types/nodemailer": "^8.0.1",
+    "@types/smtp-server": "^3.5.13",
+    "eslint": "10.8.1",
+    "smtp-server": "^3.19.7",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "@repo/common": "workspace:*",
+    "@repo/db": "workspace:*",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "nodemailer": "^10.0.0",
     "zod": "^4.5.4"
   }
 }

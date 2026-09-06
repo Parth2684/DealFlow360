@@ -1,7 +1,249 @@
-@import "tailwindcss";
+/* DealFlow360 design tokens.
+   Colours use light-dark() so they follow `color-scheme`, which the theme
+   toggle forces via :root[data-theme]. Tokens that light-dark() cannot express
+   (shadows, scrims) are declared per scheme further down. */
+:root {
+  color-scheme: light dark;
+
+  --df-color-canvas: light-dark(#f4f2ec, #0e1311);
+  --df-color-surface: light-dark(#fffefb, #161d1a);
+  --df-color-surface-subtle: light-dark(#edeae1, #1c2421);
+  --df-color-surface-raised: light-dark(#fffefb, #202a26);
+  --df-color-surface-hover: light-dark(#e8e4d9, #232d29);
+  --df-color-surface-inverse: light-dark(#141d19, #f4f2ec);
+  --df-color-surface-disabled: light-dark(#e4e0d6, #262f2b);
+
+  /* The sidebar stays dark in both themes; surface-inverse would flip it to
+     near-white in dark mode. */
+  --df-color-sidebar: light-dark(#141d19, #101613);
+  --df-color-sidebar-raised: light-dark(#1e2a24, #1a221e);
+  --df-color-sidebar-border: light-dark(#2a3830, #222b27);
+  --df-color-sidebar-foreground: light-dark(#f5f4ef, #e7ebe8);
+  --df-color-sidebar-foreground-muted: light-dark(#9db0a7, #8a9992);
+
+  --df-color-foreground-strong: light-dark(#101815, #f2f4f1);
+  --df-color-foreground: light-dark(#31403a, #d3dad6);
+  --df-color-foreground-muted: light-dark(#5c6a63, #97a49e);
+  --df-color-foreground-inverse: light-dark(#f7f6f1, #101815);
+  --df-color-foreground-inverse-muted: light-dark(#a9b6b0, #5c6a63);
+  --df-color-foreground-disabled: light-dark(#8b958f, #6d7873);
+
+  --df-color-border: light-dark(#dedacf, #2a3531);
+  --df-color-border-strong: light-dark(#bdb7a9, #3b4844);
+  --df-color-brand: light-dark(#186a53, #4fb995);
+  --df-color-brand-hover: light-dark(#125644, #6bcaa9);
+  --df-color-brand-active: light-dark(#0d4436, #3ba582);
+  --df-color-brand-subtle: light-dark(#e3f1eb, #14332a);
+  --df-color-on-brand: light-dark(#ffffff, #05100c);
+  --df-color-focus: light-dark(#186a53, #4fb995);
+
+  --df-color-success: light-dark(#1f6337, #62c384);
+  --df-color-success-subtle: light-dark(#e6f3ea, #16301f);
+  --df-color-warning: light-dark(#7a5600, #dfb251);
+  --df-color-warning-subtle: light-dark(#fdf1cd, #302818);
+  --df-color-danger: light-dark(#a32f2f, #f08585);
+  --df-color-danger-subtle: light-dark(#fbeaea, #371d1e);
+  --df-color-info: light-dark(#1d5b8a, #74b6e8);
+  --df-color-info-subtle: light-dark(#e8f2fa, #182a38);
+
+  /* Elevation and scrims are declared per scheme below. */
+  --df-shadow-sm: 0 0.0625rem 0.125rem rgb(16 24 21 / 0.06);
+  --df-shadow-panel:
+    0 0.0625rem 0.0625rem rgb(16 24 21 / 0.04),
+    0 0.25rem 0.75rem rgb(16 24 21 / 0.05);
+  --df-shadow-raised:
+    0 0.0625rem 0.125rem rgb(16 24 21 / 0.05),
+    0 0.5rem 1.5rem rgb(16 24 21 / 0.07);
+  --df-shadow-overlay:
+    0 0.25rem 0.75rem rgb(16 24 21 / 0.1), 0 1.5rem 3.5rem rgb(16 24 21 / 0.2);
+  --df-color-scrim: rgb(16 24 21 / 0.42);
+
+  --df-ease-product: cubic-bezier(0.2, 0, 0, 1);
+  --df-ease-product-exit: cubic-bezier(0.4, 0, 1, 1);
+  --df-ease-emphasis: cubic-bezier(0.32, 0.72, 0, 1);
+  --df-duration-theme: 320ms;
+}
+
+/* Dark elevation needs deeper, more diffuse shadows plus a lift highlight;
+   applied for system-dark (unless the toggle forced light) and forced dark. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --df-shadow-sm: 0 0.0625rem 0.125rem rgb(0 0 0 / 0.4);
+    --df-shadow-panel:
+      0 0.0625rem 0.0625rem rgb(0 0 0 / 0.35),
+      0 0.25rem 0.75rem rgb(0 0 0 / 0.4);
+    --df-shadow-raised:
+      0 0.0625rem 0.125rem rgb(0 0 0 / 0.4), 0 0.5rem 1.5rem rgb(0 0 0 / 0.5);
+    --df-shadow-overlay:
+      0 0.25rem 0.75rem rgb(0 0 0 / 0.5), 0 1.5rem 3.5rem rgb(0 0 0 / 0.65);
+    --df-color-scrim: rgb(0 0 0 / 0.62);
+  }
+}
+
+:root[data-theme="dark"] {
+  --df-shadow-sm: 0 0.0625rem 0.125rem rgb(0 0 0 / 0.4);
+  --df-shadow-panel:
+    0 0.0625rem 0.0625rem rgb(0 0 0 / 0.35), 0 0.25rem 0.75rem rgb(0 0 0 / 0.4);
+  --df-shadow-raised:
+    0 0.0625rem 0.125rem rgb(0 0 0 / 0.4), 0 0.5rem 1.5rem rgb(0 0 0 / 0.5);
+  --df-shadow-overlay:
+    0 0.25rem 0.75rem rgb(0 0 0 / 0.5), 0 1.5rem 3.5rem rgb(0 0 0 / 0.65);
+  --df-color-scrim: rgb(0 0 0 / 0.62);
+}
+
+:root[data-theme="light"] {
+  color-scheme: only light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: only dark;
+}
+
+@theme inline {
+  --color-canvas: var(--df-color-canvas);
+  --color-surface: var(--df-color-surface);
+  --color-surface-subtle: var(--df-color-surface-subtle);
+  --color-surface-raised: var(--df-color-surface-raised);
+  --color-surface-hover: var(--df-color-surface-hover);
+  --color-surface-inverse: var(--df-color-surface-inverse);
+  --color-surface-disabled: var(--df-color-surface-disabled);
+  --color-sidebar: var(--df-color-sidebar);
+  --color-sidebar-raised: var(--df-color-sidebar-raised);
+  --color-sidebar-border: var(--df-color-sidebar-border);
+  --color-sidebar-foreground: var(--df-color-sidebar-foreground);
+  --color-sidebar-foreground-muted: var(--df-color-sidebar-foreground-muted);
+  --color-foreground-strong: var(--df-color-foreground-strong);
+  --color-foreground: var(--df-color-foreground);
+  --color-foreground-muted: var(--df-color-foreground-muted);
+  --color-foreground-inverse: var(--df-color-foreground-inverse);
+  --color-foreground-inverse-muted: var(--df-color-foreground-inverse-muted);
+  --color-foreground-disabled: var(--df-color-foreground-disabled);
+  --color-border: var(--df-color-border);
+  --color-border-strong: var(--df-color-border-strong);
+  --color-brand: var(--df-color-brand);
+  --color-brand-hover: var(--df-color-brand-hover);
+  --color-brand-active: var(--df-color-brand-active);
+  --color-brand-subtle: var(--df-color-brand-subtle);
+  --color-on-brand: var(--df-color-on-brand);
+  --color-focus: var(--df-color-focus);
+  --color-scrim: var(--df-color-scrim);
+  --color-success: var(--df-color-success);
+  --color-success-subtle: var(--df-color-success-subtle);
+  --color-warning: var(--df-color-warning);
+  --color-warning-subtle: var(--df-color-warning-subtle);
+  --color-danger: var(--df-color-danger);
+  --color-danger-subtle: var(--df-color-danger-subtle);
+  --color-info: var(--df-color-info);
+  --color-info-subtle: var(--df-color-info-subtle);
+
+  --font-sans:
+    var(--font-geist-sans, "Segoe UI Variable"), "Segoe UI", sans-serif;
+  --font-mono:
+    var(--font-geist-mono, "Cascadia Code"), "SFMono-Regular", Consolas,
+    monospace;
+  --shadow-sm: var(--df-shadow-sm);
+  --shadow-panel: var(--df-shadow-panel);
+  --shadow-raised: var(--df-shadow-raised);
+  --shadow-overlay: var(--df-shadow-overlay);
+  --ease-product: var(--df-ease-product);
+  --ease-product-exit: var(--df-ease-product-exit);
+  --ease-emphasis: var(--df-ease-emphasis);
+}
 
 @theme {
-  --color-blue-1000: #2a8af6;
-  --color-purple-1000: #a853ba;
-  --color-red-1000: #e92a67;
+  --animate-dialog-in: df-dialog-in 200ms var(--df-ease-emphasis) both;
+  --animate-drawer-in-left: df-drawer-in-left 240ms var(--df-ease-emphasis) both;
+  --animate-drawer-in-right: df-drawer-in-right 240ms var(--df-ease-emphasis)
+    both;
+  --animate-rise-in: df-rise-in 260ms var(--df-ease-product) both;
+
+  @keyframes df-dialog-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.75rem) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes df-drawer-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes df-drawer-in-right {
+    from {
+      transform: translateX(100%);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @keyframes df-rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+@theme static {
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+  --text-caption--font-weight: 500;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-title: 1.125rem;
+  --text-title--line-height: 1.5rem;
+  --text-title--letter-spacing: -0.01em;
+  --text-title--font-weight: 600;
+  --text-heading: 1.5rem;
+  --text-heading--line-height: 1.875rem;
+  --text-heading--letter-spacing: -0.02em;
+  --text-heading--font-weight: 600;
+  --text-display: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.035em;
+  --text-display--font-weight: 650;
+
+  /* These t-shirt spacing names shadow Tailwind's --container-* scale, so
+     max-w-md resolves to --spacing-md (1rem), not 28rem. Size constraints must
+     use explicit values (max-w-[28rem]) rather than max-w-sm/md/lg/xl. */
+  --spacing: 0.25rem;
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  --spacing-3xl: 4rem;
+  --spacing-section: 6rem;
+  --spacing-control: 2.25rem;
+  --spacing-touch: 2.75rem;
+  --spacing-page: clamp(1rem, 2vw, 2rem);
+  --spacing-focus-ring: 0.125rem;
+
+  --container-app: 90rem;
+  --container-reading: 65ch;
+  --radius-control: 0.5rem;
+  --radius-panel: 0.875rem;
+  --radius-dialog: 1.125rem;
+  --radius-pill: 999rem;
+
+  --default-transition-duration: 160ms;
+  --default-transition-timing-function: var(--df-ease-product);
 }

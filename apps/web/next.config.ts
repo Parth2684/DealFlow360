@@ -1,8 +1,18 @@
 import type { NextConfig } from "next";
 
+const apiInternalUrl = (process.env.API_INTERNAL_URL ?? "http://localhost:3000").replace(
+  /\/$/,
+  "",
+);
+
 const nextConfig: NextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
+  async rewrites() {
+    return [
+      {
+        source: "/api/v1/:path*",
+        destination: `${apiInternalUrl}/api/v1/:path*`,
+      },
+    ];
   },
 };
 

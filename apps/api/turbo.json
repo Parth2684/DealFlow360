@@ -1,0 +1,46 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "dependsOn": ["@repo/db#db:generate"],
+      "env": [
+        "PORT",
+        "API_PUBLIC_URL",
+        "WEB_ORIGIN",
+        "SESSION_TTL_HOURS",
+        "REFRESH_TTL_DAYS",
+        "PORTAL_SESSION_TTL_MINUTES",
+        "MAGIC_LINK_TTL_MINUTES",
+        "COOKIE_SECURE",
+        "WORKER_POLL_INTERVAL_MS",
+        "WORKER_BATCH_SIZE",
+        "WORKER_BILLING_INTERVAL_MS",
+        "WORKER_HEALTH_INTERVAL_MS",
+        "WORKER_APPROVAL_INTERVAL_MS",
+        "WORKER_BACKORDER_INTERVAL_MS",
+        "WORKER_CLEANUP_INTERVAL_MS",
+        "APPROVAL_ESCALATION_AFTER_HOURS"
+      ]
+    },
+    "build": {
+      "env": [
+        "PORT",
+        "API_PUBLIC_URL",
+        "WEB_ORIGIN",
+        "SESSION_TTL_HOURS",
+        "REFRESH_TTL_DAYS",
+        "PORTAL_SESSION_TTL_MINUTES",
+        "MAGIC_LINK_TTL_MINUTES",
+        "COOKIE_SECURE",
+        "WORKER_POLL_INTERVAL_MS",
+        "WORKER_BATCH_SIZE",
+        "WORKER_BILLING_INTERVAL_MS",
+        "WORKER_HEALTH_INTERVAL_MS",
+        "WORKER_APPROVAL_INTERVAL_MS",
+        "WORKER_BACKORDER_INTERVAL_MS",
+        "WORKER_CLEANUP_INTERVAL_MS",
+        "APPROVAL_ESCALATION_AFTER_HOURS"
+      ]
+    }
+  }
+}

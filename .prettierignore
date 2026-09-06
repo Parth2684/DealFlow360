@@ -1,0 +1,7 @@
+**/.agents/**
+**/.claude/**
+**/.next/**
+**/.turbo/**
+**/dist/**
+**/generated/**
+bun.lock

@@ -1,6 +1,8 @@
 {
   "name": "@repo/ui",
   "version": "0.0.0",
+  "type": "module",
+  "private": true,
   "sideEffects": [
     "**/*.css"
   ],
@@ -8,14 +10,25 @@
     "dist"
   ],
   "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
     "./styles.css": "./dist/index.css",
-    "./*": "./dist/*.js"
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
   },
+  "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
+    "build": "bun run clean && bun run build:styles && bun run build:components",
     "build:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css",
     "build:components": "tsc",
     "check-types": "tsc --noEmit",
+    "clean": "bun -e \"import { rm } from 'node:fs/promises'; await rm('dist', { recursive: true, force: true });\"",
+    "dev": "bun -e \"await new Promise(() => {});\"",
     "dev:styles": "tailwindcss -i ./src/styles.css -o ./dist/index.css --watch",
     "dev:components": "tsc --watch",
     "lint": "eslint src --max-warnings 0"
@@ -24,13 +37,16 @@
     "react": "19.2.8"
   },
   "devDependencies": {
-    "@repo/eslint-config": "*",
-    "@repo/tailwind-config": "*",
-    "@repo/typescript-config": "*",
+    "@repo/eslint-config": "workspace:*",
+    "@repo/tailwind-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "@tailwindcss/cli": "4.3.3",
     "@types/react": "19.2.18",
     "eslint": "10.8.1",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10"
   }
 }

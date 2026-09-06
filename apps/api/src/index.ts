@@ -1,18 +1,32 @@
-import express from "express";
-import dotenv from "dotenv";
+import { prisma } from "@repo/db";
 
-dotenv.config()
-const app = express();
+import { createApp } from "./app.js";
+import { env } from "./config/env.js";
 
+const app = createApp();
+const server = app.listen(env.PORT, () => {
+  console.log(`DealFlow360 API listening on ${env.API_PUBLIC_URL}`);
+});
 
-app.get('/', (req, res) => {
-  const ip = req.ip;
-  res.json({
-    message: 'Hello World',
-    ip
-  })
-})
+let shuttingDown = false;
+async function shutdown(signal: NodeJS.Signals): Promise<void> {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  console.log(`Received ${signal}; stopping DealFlow360 API`);
+  const forceTimer = setTimeout(() => {
+    process.exitCode = 1;
+    server.closeAllConnections();
+  }, 10_000);
+  forceTimer.unref();
+  server.close(async (error) => {
+    clearTimeout(forceTimer);
+    await prisma.$disconnect();
+    if (error !== undefined) {
+      console.error("API shutdown failed", error);
+      process.exitCode = 1;
+    }
+  });
+}
 
-app.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000')
-})
+process.once("SIGINT", () => void shutdown("SIGINT"));
+process.once("SIGTERM", () => void shutdown("SIGTERM"));

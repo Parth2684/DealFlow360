@@ -1,0 +1,5 @@
+ALTER TABLE "product_variants"
+ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 1;
+
+ALTER TABLE "promotions"
+ADD COLUMN "revision" INTEGER NOT NULL DEFAULT 1;

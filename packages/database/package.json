@@ -2,16 +2,31 @@
   "name": "@repo/db",
   "version": "0.0.0",
   "type": "module",
+  "private": true,
   "scripts": {
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:deploy": "prisma migrate deploy"
+    "build": "tsc",
+    "check-types": "tsc --noEmit",
+    "db:deploy": "bunx --bun prisma migrate deploy --config prisma7.config.ts",
+    "db:format": "bunx --bun prisma format --config prisma7.config.ts",
+    "db:generate": "bunx --bun prisma generate --config prisma7.config.ts",
+    "db:migrate": "bunx --bun prisma migrate dev --config prisma7.config.ts",
+    "db:seed": "bunx --bun prisma db seed --config prisma7.config.ts",
+    "db:status": "bunx --bun prisma migrate status --config prisma7.config.ts",
+    "db:validate": "bunx --bun prisma validate --config prisma7.config.ts",
+    "demo:reset": "bun run prisma/demo-reset.ts",
+    "lint": "eslint src prisma/**/*.ts tests/**/*.ts prisma7.config.ts --max-warnings 0",
+    "test": "bun test ./tests/database.integration.test.ts"
   },
   "devDependencies": {
-    "prisma": "7.10.0"
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/bun": "1.4.1",
+    "eslint": "10.8.1",
+    "prisma": "7.10.0",
+    "typescript": "7.0.2"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/adapter-pg": "7.10.0",
     "@prisma/client": "7.10.0",
     "dotenv": "^17.4.2",
     "pg": "^8.23.0"

@@ -1,12 +1,21 @@
 {
-  "name": "with-tailwind",
+  "name": "dealflow360",
   "private": true,
+  "packageManager": "bun@1.4.1",
   "scripts": {
     "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
     "check-types": "turbo run check-types",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "db:deploy": "turbo run db:deploy --filter=@repo/db",
+    "db:generate": "turbo run db:generate --filter=@repo/db",
+    "db:migrate": "turbo run db:migrate --filter=@repo/db",
+    "db:seed": "turbo run db:seed --filter=@repo/db",
+    "db:status": "turbo run db:status --filter=@repo/db",
+    "db:validate": "turbo run db:validate --filter=@repo/db",
+    "demo:reset": "turbo run demo:reset --filter=@repo/db",
+    "dev": "turbo run dev",
+    "format": "prettier --write \"**/*.{css,js,json,md,mjs,ts,tsx,yaml,yml}\"",
+    "lint": "turbo run lint",
+    "test": "turbo run test"
   },
   "devDependencies": {
     "prettier": "3.9.6",
@@ -19,7 +28,7 @@
   "devEngines": {
     "packageManager": {
       "name": "bun",
-      "version": "1.4.0"
+      "version": "1.4.1"
     }
   },
   "workspaces": [

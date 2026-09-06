@@ -1,26 +1,126 @@
 @import "tailwindcss";
 @import "@repo/tailwind-config";
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html {
+  min-height: 100%;
+  background-color: var(--df-color-canvas);
+  scroll-padding-top: var(--spacing-3xl);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  min-height: 100dvh;
+  margin: 0;
+  background-color: var(--df-color-canvas);
+  color: var(--df-color-foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+::selection {
+  background-color: var(--df-color-brand-subtle);
+  color: var(--df-color-foreground-strong);
+}
+
+:focus-visible {
+  outline: var(--spacing-focus-ring) solid var(--df-color-focus);
+  outline-offset: var(--spacing-focus-ring);
+}
+
+/* Scrollbars follow the palette so dark mode does not show a light gutter. */
+* {
+  scrollbar-color: var(--df-color-border-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 0.625rem;
+  height: 0.625rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border: 0.1875rem solid transparent;
+  border-radius: var(--radius-pill);
+  background-clip: content-box;
+  background-color: var(--df-color-border-strong);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--df-color-foreground-muted);
+}
+
+/* The theme toggle's selected option is resolved from the root attribute so the
+   right control is highlighted on the first paint, before React hydrates. */
+:root:not([data-theme]) .theme-option[data-theme-option="system"],
+:root[data-theme="light"] .theme-option[data-theme-option="light"],
+:root[data-theme="dark"] .theme-option[data-theme-option="dark"] {
+  background-color: var(--df-color-surface);
+  color: var(--df-color-brand);
+  box-shadow: var(--df-shadow-sm);
+}
+
+/* Fallback theme cross-fade for browsers without the View Transitions API.
+   Scoped to the swap window, so it never competes with hover transitions. */
+:root[data-theme-switching] *,
+:root[data-theme-switching] *::before,
+:root[data-theme-switching] *::after {
+  transition:
+    background-color var(--df-duration-theme) var(--df-ease-product),
+    border-color var(--df-duration-theme) var(--df-ease-product),
+    color var(--df-duration-theme) var(--df-ease-product),
+    fill var(--df-duration-theme) var(--df-ease-product),
+    stroke var(--df-duration-theme) var(--df-ease-product),
+    box-shadow var(--df-duration-theme) var(--df-ease-product) !important;
+}
+
+/* The circular reveal replaces the default cross-fade: the outgoing frame holds
+   still underneath while the incoming theme is clipped open over it. */
+:root[data-theme-reveal]::view-transition-old(root),
+:root[data-theme-reveal]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+:root[data-theme-reveal]::view-transition-old(root) {
+  z-index: 1;
+}
+
+:root[data-theme-reveal]::view-transition-new(root) {
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  :root::view-transition-old(root),
+  :root::view-transition-new(root) {
+    animation: none !important;
+  }
 }

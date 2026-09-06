@@ -2,13 +2,13 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "dependsOn": ["build:styles", "build:components"]
+      "outputs": ["dist/**"]
     },
     "build:styles": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/index.css"]
     },
     "build:components": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**/*.d.ts", "dist/**/*.d.ts.map", "dist/**/*.js"]
     },
     "dev": {
       "with": ["dev:styles", "dev:components"]

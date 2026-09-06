@@ -1,3 +1,7 @@
-/* Component-level styles for the UI package */
-@import "tailwindcss" prefix(ui);
+/* Establish the canonical cascade order before any Tailwind import so that the
+   app's preflight (layer base) can never outrank this package's utilities. */
+@layer theme, base, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme) prefix(ui);
 @import "@repo/tailwind-config";
+@import "tailwindcss/utilities.css" layer(utilities) prefix(ui);
